@@ -25,10 +25,8 @@ docker compose build
 IMAGE='utilityapp-migrationservice'
 tag_and_push "$IMAGE" "$REGISTRY_URL" "$VERSION"
 
-
 IMAGE='utilityapp-apiservice'
 tag_and_push "$IMAGE" "$REGISTRY_URL" "$VERSION"
 
 IMAGE='utilityapp-webfrontend'
 tag_and_push "$IMAGE" "$REGISTRY_URL" "$VERSION"
-
