@@ -1,0 +1,204 @@
+﻿@page "/"
+@page "/home/{id}/"
+@page "/home/{id}/checks"
+
+@using Web.Clients
+@using Web.Components.Pages.Statistics
+@using Web.Components.Pages.Statistics.ByUtility
+@using Web.Components.Pages.Statistics.ByYear
+@using Web.Extensions
+
+@if (nothingFound)
+{
+    <p>@NoHomes</p>
+}
+
+@if (model == null)
+{
+    <MudText Typo="Typo.h4"><MudSkeleton></MudSkeleton></MudText>
+    <MudPaper>
+        <MudText Typo="Typo.body1"><MudSkeleton></MudSkeleton></MudText>
+        <MudText Typo="Typo.body1"><MudSkeleton></MudSkeleton></MudText>
+        <MudText Typo="Typo.body1"><MudSkeleton></MudSkeleton></MudText>
+    </MudPaper>
+}
+else
+{
+    string icon;
+    if (model.IsDefault)
+    {
+        icon = @Icons.Material.Filled.Home;
+    }
+    else
+    {
+        icon = @Icons.Material.Outlined.Home;
+    }
+    <MudStack Row="true" Class="pt-4 pb-4">
+        <MudIcon Icon="@icon" Style="font-size:2.5rem;" Color="Color.Primary" />
+        <MudText Typo="Typo.h4">
+            @model.Name
+            <MudText Inline="true" Typo="Typo.h6">(@model.Area.ToString(".00") М<sup>2</sup>)</MudText>
+        </MudText>
+    </MudStack>
+}
+
+<MudGrid Class="mb-6">
+    <MudItem sm="12" md="6" xl="4">
+        @if (model == null)
+        {
+            <AnimationPlaceholder />
+        }
+        else
+        {
+            <MudStack>
+                <MudPaper Class="pa-4">
+                    @{
+                        var address =
+                            $@"{model.City}
+                {model.Street} {model.Building} {model.Apartment}";
+                    }
+                    <MudText Typo="Typo.body1">@address</MudText>
+                    <MudText Typo="Typo.body1">@model.Region</MudText>
+                    <MudText Typo="Typo.body1">@model.Country</MudText>
+                </MudPaper>
+                @{
+                    var url = $"home/{model.Id}/tariffs";
+                }
+
+                @if (model.Tariffs.Any())
+                {
+                    var tariffs = model.Tariffs.CurrentlyActive();
+                    <MudText Typo="Typo.h6">Тарифи на сьогодні</MudText>
+                    <CompactTariffTable Model="tariffs" ShowDateColumn="false"></CompactTariffTable>
+                    <MudButton Href="@url" Variant="Variant.Filled">Тарифи</MudButton>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Warning">
+                        <MudStack>
+                            <MudText Align="Align.Center">
+                                У цьому домогосподарстві нема жодного тарифу. Для того, щоб почати роботу, додайте тарифи в налаштуваннях.
+                            </MudText>
+                            <MudButton Href="@url" Variant="Variant.Outlined" Color="Color.Warning">Перейти до налаштувань</MudButton>
+                        </MudStack>
+                    </MudAlert>
+                }
+            </MudStack>
+        }
+    </MudItem>
+    <MudItem sm="12" md="6" xl="4">
+
+        @if (model == null)
+        {
+            <AnimationPlaceholder />
+        }
+        else
+        {
+            <MudStack Spacing="4">
+                @if (model.Tariffs.Any())
+                {
+                    var url = $"/home/{model.Id}/checks/add";
+                    <MudButton FullWidth=true Href="@url"
+                               Variant="Variant.Filled" Color="Color.Primary">Створити чек</MudButton>
+                }
+
+                @if (model.Checks.Any())
+                {
+                    var options = new[] { 12, 24, 36, 48, 60, 72, int.MaxValue };
+                    <MudTable Items="@model.Checks.OrderByDescending(x=>x.Date)" Hover="true" FixedHeader="true" Breakpoint="Breakpoint.None" Dense="true" RowClass="cursor-pointer" Class="pa-3" T="CheckViewDto"
+                              Filter="new Func<CheckViewDto,bool>(FilterFunc)" Height="510px" OnRowClick="RowClickEvent">
+                        <HeaderContent>
+                            <MudTh></MudTh>
+                            <MudTh><MudTableSortLabel Enabled="true" SortBy="new Func<CheckViewDto, object>(x=>x.Date)">Дата</MudTableSortLabel></MudTh>
+                            <MudTh colspan="2">Сума</MudTh>
+
+                        </HeaderContent>
+                        <RowTemplate>
+                            @{
+                                var viewUrl = $"/home/{model.Id}/checks/{context.Id}";
+                            }
+                            <MudTh><MudIconButton Size="Size.Small" Href="@viewUrl" Icon="fa-solid fa-eye"></MudIconButton></MudTh>
+                            <MudTd DataLabel="Дата">@context.Date.ToString("d")</MudTd>
+                            <MudTd DataLabel="Сума">@context.Amount.ToString("C")</MudTd>
+                            @*                             @{
+                                var editUrl = $"{viewUrl}/edit";
+                            }
+                            <MudTd> <MudIconButton Size="Size.Small" Href="@editUrl" Icon="fa-solid fa-edit"></MudIconButton> </MudTd>
+ *@                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="@options" HidePageNumber="true" HidePagination="true" RowsPerPageString="Показати:" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            </MudStack>
+        }
+
+
+    </MudItem>
+    @if (model != null && model.Checks.Any())
+    {
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6">Статистика</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper>
+                <ByYear Checks="@model?.Checks"></ByYear>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper>
+                <ByUtility Checks="@model?.Checks"></ByUtility>
+            </MudPaper>
+        </MudItem>
+
+    }
+</MudGrid>
+
+
+@code {
+    HomeViewDto model = default!;
+    @inject ApiClient apiClient;
+    @inject NavigationManager navigationManager;
+
+    [Parameter]
+    public string? id { get; set; }
+
+    private string? NoHomes = "No homes found. Please check Settings";
+    bool nothingFound = false;
+
+    private bool FilterFunc(CheckViewDto check)
+    {
+        return true;
+    }
+
+    protected override void OnParametersSet()
+    {
+        try
+        {
+            if (id == null)
+            {
+                model = apiClient.Home_GetDefaultAsync().Result;
+            }
+            else
+            {
+                model = apiClient.Home_GetAsync(Guid.Parse(id)).Result;
+            }
+            nothingFound = false;
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode == 404)
+            {
+                nothingFound = true;
+            }
+        }
+    }
+
+    private void RowClickEvent(TableRowClickEventArgs<CheckViewDto> element)
+    {
+        if (element.Item is not null)
+        {
+            navigationManager.NavigateTo($"/home/{model.Id}/checks/{element.Item.Id}");
+        }
+    }
+}

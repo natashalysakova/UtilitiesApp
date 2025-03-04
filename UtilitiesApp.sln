@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "AppHost\AppHost.csproj", "{43A50D51-DE30-45A8-9493-D2F0618D1B7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "ServiceDefaults\ServiceDefaults.csproj", "{24F092CF-B5A2-4907-BC82-ED2970223F03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiService", "ApiService\ApiService.csproj", "{855549CE-555F-418B-B8F7-F5FD21DCC3FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "Web\Web.csproj", "{2ED395C6-94F1-4391-811E-51FF6BA81933}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{E4A2F1F2-5A0F-453A-97E2-98F68272F981}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{226D4048-7A22-43DA-A8B8-A1CE3994E5B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2C450EA1-DEE3-46AF-A570-C70250434C13}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.env = .env
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigrationService", "MigrationService\MigrationService.csproj", "{F890C0FC-17A5-450B-BA02-D2EEA60F4C67}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{43A50D51-DE30-45A8-9493-D2F0618D1B7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43A50D51-DE30-45A8-9493-D2F0618D1B7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43A50D51-DE30-45A8-9493-D2F0618D1B7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43A50D51-DE30-45A8-9493-D2F0618D1B7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24F092CF-B5A2-4907-BC82-ED2970223F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24F092CF-B5A2-4907-BC82-ED2970223F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24F092CF-B5A2-4907-BC82-ED2970223F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24F092CF-B5A2-4907-BC82-ED2970223F03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{855549CE-555F-418B-B8F7-F5FD21DCC3FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{855549CE-555F-418B-B8F7-F5FD21DCC3FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{855549CE-555F-418B-B8F7-F5FD21DCC3FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{855549CE-555F-418B-B8F7-F5FD21DCC3FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ED395C6-94F1-4391-811E-51FF6BA81933}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ED395C6-94F1-4391-811E-51FF6BA81933}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ED395C6-94F1-4391-811E-51FF6BA81933}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ED395C6-94F1-4391-811E-51FF6BA81933}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4A2F1F2-5A0F-453A-97E2-98F68272F981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4A2F1F2-5A0F-453A-97E2-98F68272F981}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4A2F1F2-5A0F-453A-97E2-98F68272F981}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4A2F1F2-5A0F-453A-97E2-98F68272F981}.Release|Any CPU.Build.0 = Release|Any CPU
+		{226D4048-7A22-43DA-A8B8-A1CE3994E5B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{226D4048-7A22-43DA-A8B8-A1CE3994E5B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{226D4048-7A22-43DA-A8B8-A1CE3994E5B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{226D4048-7A22-43DA-A8B8-A1CE3994E5B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F890C0FC-17A5-450B-BA02-D2EEA60F4C67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F890C0FC-17A5-450B-BA02-D2EEA60F4C67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F890C0FC-17A5-450B-BA02-D2EEA60F4C67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F890C0FC-17A5-450B-BA02-D2EEA60F4C67}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

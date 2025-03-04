@@ -1,0 +1,75 @@
+services:
+  mysql:
+    container_name: "mysql"
+    image: "docker.io/library/mysql:9.1"
+    env_file:
+      - .env
+    volumes:
+    - "apphost-feed4158f1-mysql-data:/var/lib/mysql"
+    ports:
+    - target: 3306
+      published: 3309
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  migrationservice:
+    container_name: "migrationservice"
+    image: "migrationservice:latest"
+    build:
+      context: .
+      dockerfile: MigrationService/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+        restart: true
+  apiservice:
+    container_name: "apiservice"
+    image: "apiservice:latest"
+    build:
+      context: .
+      dockerfile: ApiService/Dockerfile
+    environment:
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "8080"
+    env_file:
+      - .env
+    ports:
+    - target: 8080
+      published: 10000
+    - target: 8081
+      published: 10001
+    restart: unless-stopped
+    depends_on:
+      migrationservice:
+        condition: service_completed_successfully
+        restart: true
+  webfrontend:
+    container_name: "webfrontend"
+    image: "webfrontend:latest"
+    build:
+      context: .
+      dockerfile: Web/Dockerfile
+    environment:
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      services__apiservice__http__0: "http://apiservice:8080"
+      HTTP_PORTS: "8080"
+    env_file:
+      - .env
+    ports:
+    - target: 8080
+      published: 10002
+    - target: 8081
+      published: 10003
+    restart: unless-stopped
+    depends_on:
+      apiservice:
+        condition: service_started
+        restart: true
+volumes:
+  apphost-feed4158f1-mysql-data: {}

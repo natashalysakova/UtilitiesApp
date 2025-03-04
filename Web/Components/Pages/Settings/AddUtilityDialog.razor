@@ -1,0 +1,91 @@
+﻿@using Web.Clients
+
+@if (model != null)
+{
+    <EditForm Model="@model" OnValidSubmit="Submit">
+
+        <MudDialog Style="height:auto;">
+            <TitleContent>
+                @if (IsEditMode)
+                {
+                    <MudText Typo="Typo.h4">Редагувати</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.h4">Додати домівку</MudText>
+                }
+            </TitleContent>
+            <DialogContent>
+                <DataAnnotationsValidator />
+                <MudStack>
+                    <MudTextField @bind-Value="@model.Name" For="@(()=> model.Name)" Label="Назва"></MudTextField>
+                </MudStack>
+            </DialogContent>
+            <DialogActions>
+                <MudButton OnClick="Cancel">Відміна</MudButton>
+                <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit">
+                    @if (IsEditMode)
+                    {
+                        <span>Оновити</span>
+                    }
+                    else
+                    {
+                        <span>Створити</span>
+                    }
+                </MudButton>
+            </DialogActions>
+        </MudDialog>
+    </EditForm>
+}
+
+@code {
+    @inject ApiClient apiClient;
+
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Guid? UtilityId { get; set; }
+
+    private bool IsEditMode { get; set; }
+
+
+    private UtilityGroupEditModel? model;
+    private string? errorMessage = null;
+
+    private async Task Submit()
+    {
+        errorMessage = null;
+        try
+        {
+            var result = await apiClient.Utilities_PutAsync(model!.Id, model);
+            MudDialog.Close(DialogResult.Ok(model));
+        }
+        catch (ApiException ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (UtilityId == null)
+        {
+            model = new UtilityGroupEditModel();
+        }
+        else
+        {
+            IsEditMode = true;
+            try
+            {
+                model = await apiClient.Utilities_GetForEditAsync(UtilityId.Value);
+            }
+            catch (ApiException ex)
+            {
+                errorMessage = ex.Message;
+            }
+        }
+    }
+}

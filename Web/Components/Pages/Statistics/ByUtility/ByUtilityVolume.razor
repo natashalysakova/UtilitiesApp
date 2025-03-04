@@ -1,0 +1,81 @@
+﻿@using ApexCharts;
+@using Web.Clients
+@using System.Globalization;
+
+@if (Checks is null || !Checks.Any())
+{
+    return;
+}
+
+@{
+    var title = $"{SelectedUtility.Name} по місяцях";
+}
+
+<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="chart1" Title="@title" Options="@options">
+
+    @{
+        var years = Checks.Select(x => x.Date.Year).Distinct().Order();
+
+        foreach (var year in years)
+        {
+            var byMonth = Checks
+            .Where(x => x.Date.Year == year && x.IsZeroCheck == false)
+            .GroupBy(x => x.Date)
+            .OrderBy(x => x.Key);
+
+            <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
+                             Items="byMonth"
+                             Name="@year.ToString()"
+                             SeriesType="SeriesType.Line"
+                             XValue="@(e => e.Key.Month)"
+                             YAggregate="@(e => e.Sum(e => e.SelectMany(x=>x.Records).Where(x=>x.Tariff.UtilityGroupId == SelectedUtility.Id).Sum(x=>x.Measure)))"
+                              />
+        }
+    }
+</ApexChart>
+
+@* YAggregate="@(e => e.Sum(e => e.SelectMany(x=>x.Records).Where(x=>x.Tariff.UtilityGroupId == SelectedUtility.Id).Sum(x=>x.Measure)))" *@
+
+@code {
+    [Parameter, EditorRequired]
+    public required IEnumerable<CheckViewDto> Checks { get; set; }
+
+    [Parameter, EditorRequired]
+    public required UtilityGroupViewModel SelectedUtility { get; set; }
+
+    private ApexChart<IGrouping<DateTime, CheckViewDto>>? chart1;
+    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
+
+    protected override void OnInitialized()
+    {
+        options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
+            {
+                Debug = true,
+                Theme = new Theme
+                {
+                    Mode = Mode.Dark,
+                    Palette = PaletteType.Palette1,
+                },
+
+                Chart = new Chart
+                {
+                    Toolbar = new Toolbar
+                    {
+                        Show = false,
+                    },
+                    DefaultLocale = CultureInfo.CurrentCulture.Name
+                },
+                Xaxis = new XAxis()
+                {
+                    Type = XAxisType.Category,
+                    Categories = Enumerable.Range(1, 12).Select(x => DateTimeFormatInfo.CurrentInfo.GetMonthName(x)),
+                },
+                Stroke = new Stroke { Curve = Curve.Smooth },
+            };
+    }
+
+    protected override void OnParametersSet()
+    {
+        chart1?.RenderAsync();
+    }
+}

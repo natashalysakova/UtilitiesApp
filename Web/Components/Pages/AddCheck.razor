@@ -1,0 +1,298 @@
+﻿@page "/home/{HouseId}/checks/add"
+@page "/home/{HouseId}/checks/{CheckId}/edit"
+
+@using Web.Clients
+@using Web.Components.Pages.CheckViewTables
+@using Web.Extensions
+@using Web.NavigationServices
+@using System.Collections.Generic;
+
+<MudGrid Class="pt-4">
+    @if (displayAlert)
+    {
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                <MudText Color="@Color.Error">
+                    @if (validationResult is not null)
+                    {
+                        @foreach (var item in validationResult.ValidationErrors)
+                        {
+                            foreach (var field in item.Value)
+                            {
+                                @field
+                            }
+                        }
+                    }
+                    else
+                    {
+                        @errorMessage
+                    }
+
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    }
+    <MudItem xs="12">
+        @if (Model != null)
+        {
+            <MudStack>
+                <MudText Typo="Typo.h4">Рахунок за @Model.Date!.Value.ToShortDateString()</MudText>
+                <MudGrid Justify="Justify.SpaceBetween">
+                    <MudItem xs="4">
+                        <MudDatePicker @bind-Date="Model.Date" Label="Дата оплати" MinDate="@MinAvailableDate" Editable="true" PickerClosed="ReFill"></MudDatePicker>
+                    </MudItem>
+                </MudGrid>
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MetersTariffTable Model="@Model.Records" IsZeroCheck="@Model.IsZeroCheck" />
+                    </MudItem>
+                    <MudFlexBreak />
+                    <MudItem xs="12" sm="8" lg="6">
+                        <VolumeTariffTable Model="@Model.Records" IsZeroCheck="@Model.IsZeroCheck" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <NotFixedTariffTable Model="Model.Records" />
+                    </MudItem>
+                    <MudItem md="7">
+                        <AdditionalPayTable Model="Model.Records"></AdditionalPayTable>
+                    </MudItem>
+                    <MudItem md="5">
+                        <FixedPayTable Model="Model.Records"></FixedPayTable>
+                    </MudItem>
+                    <MudFlexBreak />
+                    <MudItem md="5">
+                        <FixedTariffTable Model="Model.Records" />
+                    </MudItem>
+
+                    <MudFlexBreak />
+                    <MudItem md="8">
+                        <AreaTariffTable Model="Model.Records" />
+                    </MudItem>
+                    <MudFlexBreak />
+                    <MudItem xs="6">
+                        <MudStack Spacing="0" Wrap="Wrap.NoWrap">
+                            <MudCheckBox Label="Нульовий чек" @bind-Value="@Model.IsZeroCheck" Color="Color.Warning">
+                            </MudCheckBox>
+                            <MudText Class="pl-4" Typo="Typo.overline" Color="Color.Warning">Використовується для актуалізації показників без прорахунку вартості.</MudText>
+                            <MudTextField @bind-Value="@Model.IsZeroCheck" TextChanged="FillAndCalculate" Class="invisible"></MudTextField>
+                        </MudStack>
+                    </MudItem>
+                    <MudSpacer/>
+                    <MudItem xs="6">
+                        <MudStack Row="true" Reverse="true">
+                            <MudText Align="Align.End" Typo="Typo.h5">
+                                Сума
+                                <MudText Inline="true" Typo="Typo.h5" Color="Color.Success">
+                                    @Model.Amount.ToString("C")
+                                </MudText>
+                            </MudText>
+                            @*                             @if (isCalculating)
+                            {
+                                <MudProgressCircular Color="Color.Success" Size="Size.Small" Indeterminate="true" />
+                            } *@
+                        </MudStack>
+                        <MudStack Row="true" Justify="Justify.FlexEnd" Class="pa-4">
+                            <MudSpacer />
+                            <MudButton Variant="Variant.Text" Href="@($"/home/{HouseId}/checks/{CheckId}")">Відмінити</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" OnClick="SubmitCheck">Зберегти</MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+
+            </MudStack>
+
+        }
+    </MudItem>
+
+
+    @if (Model != null && Tariffs != null)
+    {
+        <MudItem xs="12">
+            @if (!Tariffs.Any())
+            {
+                <MudAlert Severity="Severity.Warning">
+                    <MudStack>
+                        <MudText Align="Align.Center">
+                            У цьому домогосподарстві нема жодного тарифу для @Model.Date?.ToShortDateString() . Для того, щоб почати роботу, додайте тарифи в налаштуваннях.
+                        </MudText>
+                        <MudButton Href="settings/tariffs" Variant="Variant.Outlined" Color="Color.Warning">Перейти до налаштувань</MudButton>
+                    </MudStack>
+                </MudAlert>
+            }
+            else
+            {
+                <MudExpansionPanels>
+                    @*                     <MudExpansionPanel Text="Тарифи" Expanded="false">
+                        <CompactTariffTable Model="Tariffs" ShowDateColumn="true" Elevation="0"></CompactTariffTable>
+                    </MudExpansionPanel> *@
+                </MudExpansionPanels>
+            }
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    @inject ApiClient apiClient
+    @inject CheckCalculateService service;
+    @inject NavigationManager navigationManager;
+    @inject ILogger<AddCheck> logger;
+
+    [Parameter]
+    public required string HouseId { get; set; }
+
+    [Parameter]
+    public string? CheckId { get; set; }
+
+    public CheckEditDto? Model { get; set; }
+
+    public ICollection<TariffCalulateDto>? Tariffs { get; set; }
+    private DateTime MinAvailableDate = DateTime.MinValue;
+
+    protected override void OnInitialized()
+    {
+        logger.LogInformation("OnInitialized");
+        
+        service.OnRefreshRequested += FillAndCalculate;
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (!Guid.TryParse(HouseId, out var houseGuid))
+        {
+            return;
+        }
+
+        if (CheckId == null)
+        {
+            try
+            {
+                Model = await apiClient.Check_PostCreateEmptyActionAsync(houseGuid, DateTime.Now);
+            }
+            catch (Exception ex)
+            {
+                displayAlert = true;
+                errorMessage = ex.Message;
+            }
+        }
+        else
+        {
+            try
+            {
+                var checkId = Guid.Parse(CheckId);
+                Model = await apiClient.Check_GetForEditAsync(checkId);
+                displayAlert = false;
+            }
+            catch (ApiException<ValidationResult> ex)
+            {
+                displayAlert = true;
+                validationResult = ex.Result;
+            }
+            catch (Exception ex)
+            {
+                displayAlert = true;
+                errorMessage = ex.Message;
+            }
+        }
+
+        ReloadSupportingData();
+    }
+
+    private bool displayAlert = false;
+    private string? errorMessage;
+    private ValidationResult? validationResult;
+
+    private async Task SubmitCheck()
+    {
+        logger.LogInformation("SubmitCheck");
+
+        try
+        {
+            var result = await apiClient.Check_PutAsync(Model!.Id, Model);
+            navigationManager.NavigateTo($"/home/{HouseId}");
+        }
+        catch (ApiException<ValidationResult> ex)
+        {
+            displayAlert = true;
+            validationResult = ex.Result;
+        }
+        catch (Exception ex)
+        {
+            displayAlert = true;
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async void FillAndCalculate()
+    {
+
+        if (Model == null)
+            return;
+
+        logger.LogInformation("FillAndCalculate");
+        try
+        {
+            logger.LogInformation(string.Join(",", Model.Records.Select(x => x.Measure.ToString())));
+
+            Model.Amount = await apiClient.Check_PostCalculateActionAsync(Model);
+            StateHasChanged();
+        }
+        catch (ApiException<ValidationResult> ex)
+        {
+            displayAlert = true;
+            validationResult = ex.Result;
+        }
+        catch (Exception ex)
+        {
+            displayAlert = true;
+            errorMessage = ex.Message;
+        }
+
+    }
+
+    private void ReFill()
+    {
+        logger.LogInformation("ReFill");
+
+        if (Model == null)
+            return;
+
+        try
+        {
+            Model = apiClient.Check_PostRefillActionAsync(Model).Result;
+            ReloadSupportingData();
+            StateHasChanged();
+            service.ModelUpdated();
+        }
+        catch (ApiException<ValidationResult> ex)
+        {
+            displayAlert = true;
+            validationResult = ex.Result;
+        }
+        catch (Exception ex)
+        {
+            displayAlert = true;
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void ReloadSupportingData()
+    {
+        logger.LogInformation("ReloadSupportingData");
+
+        if (Model == null)
+            return;
+
+        Tariffs = Model.Records.Select(x => x.Tariff).ToList();
+
+        try
+        {
+            var previousCheck = apiClient.Check_GetPreviousAsync(Model.HomeId, Model.Date).Result;
+            MinAvailableDate = previousCheck.Date.AddDays(1);
+        }
+        catch
+        {
+            MinAvailableDate = new DateTime(1970, 1, 1);
+        }
+    }
+}

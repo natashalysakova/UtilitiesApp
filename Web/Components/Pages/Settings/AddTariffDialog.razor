@@ -1,0 +1,386 @@
+﻿@using System.Globalization
+@using Web.Clients
+
+@if (Model is not null)
+{
+    <EditForm Model="@Model" OnValidSubmit="CreateUpdateTariff" Context="editContext">
+        <MudDialog Style="width:700px;">
+            <TitleContent>
+                @if (IsEditMode)
+                {
+                    <MudText Typo="Typo.h4">@Model.UtilityGroupName</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.h4">Додати тариф</MudText>
+                }
+            </TitleContent>
+
+            <DialogContent>
+                <DataAnnotationsValidator />
+                <MudStack>
+                    @if (utilityTypes != null)
+                    {
+                        <MudSelect T="Guid" @bind-Value="@Model.UtilityGroupId" Placeholder="Оберіть послугу" ToStringFunc="@ConvertToString">
+                            @foreach (var item in utilityTypes)
+                            {
+                                <MudSelectItem Value="@item.Id" />
+                            }
+                        </MudSelect>
+                    }
+                    @if (loadingError)
+                    {
+                        <MudText>В системі не знайдено будинку за замовчанням. Створіть або оберіть його в налаштуваннях і спробуйте знову.</MudText>
+                        <MudButton Href="/settings/homes" Variant="Variant.Filled" Color="Color.Primary">Перейти до налаштувань</MudButton>
+                    }
+                    else if (households is not null)
+                    {
+
+                        <MudSelect @bind-Value="@Model.HomeId" Label="Домівка">
+                            @foreach (var house in households)
+                            {
+                                <MudSelectItem Value="house.Id">@house.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+
+                    <MudStack Row="true">
+                        <MudDatePicker @bind-Date="@Model.StartDate" Context="picker1" Label="Дата початку" AdornmentColor="Color.Primary" />
+                        @*                         <MudDatePicker @bind-Date="@Model.EndDate" For="@(()=> Model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="Дата кінця"/>
+                         <MudButton OnClick="(()=>Model.EndDate = null)" Size="Size.Small" Color="Color.Error"
+                                                             Style="margin-top:auto; height: 32px;"><i class="fa-solid fa-broom"></i></MudButton>*@
+
+                    </MudStack>
+
+
+                    <MudText Typo="Typo.body1">
+                        Оберіть тип тарифу
+                    </MudText>
+                    <MudToggleGroup @bind-Value="@Model.TariffType" Color="Color.Primary" FixedContent
+                                    SelectionMode="SelectionMode.SingleSelection" Size="Size.Medium">
+                        <ChildContent>
+                            <MudToggleItem Value="TariffType.Meters">
+                                <MudTooltip Text="Сума залежить від показників лічільника">
+                                    Лічильник
+                                </MudTooltip>
+                            </MudToggleItem>
+                            <MudToggleItem Value="TariffType.Volume">
+                                <MudTooltip Text="Сума залежить від обсягу спожитої послуги, без введення показників лічільника">
+                                    За обсягом
+                                </MudTooltip>
+                            </MudToggleItem>
+                            <MudToggleItem Value="TariffType.Fixed">
+                                <MudTooltip Text="Фіксована сума кожен місяць">
+                                    Фіксований
+                                </MudTooltip>
+                            </MudToggleItem>
+                            <MudToggleItem Value="TariffType.NotFixedPayment">
+                                <MudTooltip Text="Довільна сума кожен місяць">
+                                    Не фіксований
+                                </MudTooltip>
+                            </MudToggleItem>
+                            <MudToggleItem Value="TariffType.HouseHoldArea">
+                                <MudTooltip Text="Сума залежить від площі помешкання">
+                                    За площею
+                                </MudTooltip>
+                            </MudToggleItem>
+                        </ChildContent>
+                    </MudToggleGroup>
+
+                    @if (Model.TariffType != TariffType.NotFixedPayment)
+                    {
+                        <MudNumericField @bind-Value="@Model.Cost"
+                                         For="@(()=> Model.Cost)" Culture="@culture"
+                                         Format="0.00##" Label="Ціна" HideSpinButtons="true"
+                                         AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                         Adornment="Adornment.Start" AdornmentColor="Color.Primary" />
+                    }
+
+                    @if (Model.TariffType is TariffType.Meters or TariffType.Volume)
+                    {
+                        <MudTextField @bind-Value="@Model.Units" For="@(()=> Model.Units)" Label="Одиниці вимірювання" />
+                        <MudSwitch @bind-Value="@Model.UseLimits" Label="Використовувати ліміти" Color="Color.Primary" />
+                    }
+
+                    @if (Model is { TariffType: TariffType.Meters or TariffType.Volume, UseLimits: true })
+                    {
+                        <MudPaper Elevation="5" Class="pa-4">
+                            @foreach (var item in Model.Limits)
+                            {
+                                <MudStack Row="true">
+                                    <MudNumericField Format=".##" @bind-Value="@item.Limit" Label="Верхній ліміт"
+                                                     Variant="Variant.Filled" Margin="Margin.Dense"
+                                                     AdornmentText="@Model.Units"
+                                                     Adornment="Adornment.End" AdornmentColor="Color.Primary" />
+                                    <MudNumericField Format="0.00##" @bind-Value="@item.CostAfterLimit"
+                                                     Label="Ціна вище ліміту"
+                                                     AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                                     Adornment="Adornment.Start" AdornmentColor="Color.Primary"
+                                                     Variant="Variant.Filled" Margin="Margin.Dense" />
+                                    @if (Model.Limits.Count > 1)
+                                    {
+                                        <MudIconButton Icon="fa fa-trash"
+                                                       Color="Color.Error"
+                                                       OnClick="(()=> DeleteLimit(item))" />
+                                    }
+                                    else
+                                    {
+                                        <MudIconButton Icon="fa fa-trash"
+                                                       Color="Color.Default" />
+                                    }
+                                </MudStack>
+                            }
+                            <MudIconButton Class="align-content-center" Icon="fa fa-plus" Color="Color.Tertiary" OnClick="AddLimit"></MudIconButton>
+                        </MudPaper>
+                    }
+
+                    @if (Model.TariffType is TariffType.Meters or TariffType.Meters)
+                    {
+                        var lable = $"Додатковий платіж за {(string.IsNullOrWhiteSpace(Model.Units) ? "одиницю виміру" : Model.Units)}";
+                        <MudSwitch @bind-Value="@Model.UseAdditionalFee" Label="@lable" Color="Color.Primary" />
+
+                        @if (Model.UseAdditionalFee)
+                        {
+                            <MudStack Row="true">
+                                <MudTextField @bind-Value="@Model.AdditionalFeeName" Label="Назва додаткового платежу"
+                                              Variant="Variant.Filled" Margin="Margin.Dense"
+                                              AdornmentText="@Model.Units" AdornmentColor="Color.Primary" />
+                                <MudNumericField Format="0.00##" @bind-Value="@Model.AdditionalFeeCost" Label="Вартість"
+                                                 AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                                 Adornment="Adornment.Start" AdornmentColor="Color.Primary"
+                                                 Variant="Variant.Filled" Margin="Margin.Dense"></MudNumericField>
+                            </MudStack>
+                        }
+                    }
+
+                    @if (Model.TariffType is not TariffType.Fixed)
+                    {
+                        <MudSwitch @bind-Value="@Model.UseFixedPay" Label="Додатковий фіксований платіж" Color="Color.Primary" />
+
+                        @if (Model.UseFixedPay)
+                        {
+                            <MudStack Row="true">
+                                <MudTextField @bind-Value="@Model.FixedPayName"
+                                              Label="Назва фіксованого платежу"
+                                              Variant="Variant.Filled" Margin="Margin.Dense"
+                                              AdornmentText="@Model.Units"></MudTextField>
+                                <MudNumericField Format="0.00##" @bind-Value="@Model.FixedPay" Label="Вартість"
+                                                 AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                                 Adornment="Adornment.Start" AdornmentColor="Color.Primary" Variant="Variant.Filled" Margin="Margin.Dense"></MudNumericField>
+                            </MudStack>
+
+                        }
+                    }
+
+                    @if (displayAlert)
+                    {
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary />
+                                @if (validationResult is not null)
+                                {
+                                    @foreach (var item in validationResult.ValidationErrors)
+                                    {
+                                        foreach (var field in item.Value)
+                                        {
+                                            @field
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    @errorMessage
+                                }
+
+                            </MudText>
+                        </MudPaper>
+                    }
+                </MudStack>
+
+            </DialogContent>
+            <DialogActions>
+                <MudButton OnClick="Cancel">Відміна</MudButton>
+                <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit">
+                    @if (IsEditMode)
+                    {
+                        <span>Обновити</span>
+                    }
+                    else
+                    {
+                        <span>Створити</span>
+                    }
+                </MudButton>
+            </DialogActions>
+        </MudDialog>
+    </EditForm>
+}
+@code
+{
+    @inject ApiClient apiClient ;
+    @inject ISnackbar Snackbar
+
+
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Guid? TariffId { get; set; }
+
+    [Parameter]
+    public string? HomeId { get; set; }
+
+    [Parameter]
+    public TariffViewDto? Reference { get; set; }
+
+    [Parameter]
+    public TariffEditDto? Model { get; set; }
+
+    private bool IsEditMode { get; set; }
+
+    private static ICollection<UtilityGroupViewModel>? utilityTypes;
+    private ICollection<HomeViewDto>? households;
+
+    private CultureInfo culture = CultureInfo.CurrentCulture;
+
+    bool displayAlert = false;
+    string errorMessage = string.Empty;
+    ValidationResult? validationResult = default!;
+
+    bool loadingError = false;
+
+    protected override async void OnInitialized()
+    {
+        var task = apiClient.Home_GetAllAsync();
+        task.Wait();
+        households = task.Result;
+
+        if (Reference != null)
+        {
+            Model = new TariffEditDto()
+                {
+                    StartDate = Reference.EndDate?.AddDays(1),
+                    Limits = new List<LimitEditDto>(),
+                    UseLimits = Reference.UseLimits,
+                    UseAdditionalFee = Reference.UseAdditionalFee,
+                    AdditionalFeeName = Reference.AdditionalFeeName,
+                    UseFixedPay = Reference.UseFixedPay,
+                    FixedPayName = Reference.FixedPayName,
+                    HomeId = Reference.Home.Id,
+                    TariffType = Reference.TariffType,
+                    Units = Reference.Units,
+                    UtilityGroupId = Reference.UtilityGroupId,
+                    UtilityGroupName = Reference.UtilityGroupName,
+                };
+            if (Reference.Limits.Any())
+            {
+                foreach (var limit in Reference.Limits)
+                {
+                    Model.Limits.Add(new LimitEditDto() { Limit = limit.Limit });
+                }
+            }
+            else
+            {
+                Model.Limits.Add(new LimitEditDto());
+            }
+
+        }
+        else if (TariffId == null)
+        {
+            Model = new TariffEditDto();
+            Model.StartDate = DateTime.Today;
+            Model.Limits = new List<LimitEditDto>();
+            Model.Limits.Add(new LimitEditDto());
+            Model.AdditionalFeeCost = 0;
+            Model.FixedPay = 0;
+
+            if (Guid.TryParse(HomeId, out var guid))
+            {
+                Model.HomeId = guid;
+            }
+            else
+            {
+                var defaultHouse = households.SingleOrDefault(x => x.IsDefault);
+                if (defaultHouse is null)
+                {
+                    loadingError = true;
+                }
+                else
+                {
+                    Model.HomeId = defaultHouse.Id;
+                }
+            }
+        }
+        else if (TariffId != null)
+        {
+            IsEditMode = true;
+            Model = await apiClient.Tariffs_GetForEditAsync(TariffId.Value);
+            StateHasChanged();
+        }
+
+        utilityTypes = await apiClient.Utilities_GetAllAsync();
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task CreateUpdateTariff(EditContext context)
+    {
+        try
+        {
+            var result = await apiClient.Tariffs_PutAsync(Model!.Id, Model);
+
+            if (IsEditMode)
+            {
+                Snackbar.Add($"Тариф {result.UtilityGroupName} оновлено", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Тариф {result.UtilityGroupName} створено", Severity.Success);
+            }
+
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+        catch (ApiException<ValidationResult> ex)
+        {
+            displayAlert = true;
+            validationResult = ex.Result;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            displayAlert = true;
+        }
+    }
+
+    private void AddLimit()
+    {
+        Model!.Limits.Add(new LimitEditDto() { });
+    }
+
+    private void DeleteLimit(LimitEditDto item)
+    {
+        if (Model!.Limits.Count > 1)
+            Model.Limits.Remove(item);
+
+    }
+
+    private async Task<IEnumerable<Guid>> NameAutoComplete(string value, CancellationToken token)
+    {
+        if (utilityTypes is null)
+        {
+            utilityTypes = await apiClient.Utilities_GetAllAsync();
+        }
+
+        if (string.IsNullOrEmpty(value))
+            return utilityTypes.Select(x => x.Id);
+
+        return utilityTypes.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
+    }
+
+    Func<Guid, string> ConvertToString = new Func<Guid, string>((id) =>
+    {
+        return utilityTypes?.SingleOrDefault(x => x.Id == id)?.Name ?? "ОБЕРІТЬ ПОСЛУГУ";
+    });
+}

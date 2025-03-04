@@ -1,0 +1,133 @@
+﻿@using System.Globalization
+@using Web.Clients
+
+@if(Model != null)
+{
+<EditForm Model="@Model" OnValidSubmit="CreateUpdateHome">
+    <MudDialog>
+        <TitleContent>
+            @if (IsEditMode)
+            {
+                <MudText Typo="Typo.h4">@Model.Name</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.h4">Додати домівку</MudText>
+            }
+        </TitleContent>
+
+        <DialogContent>
+
+            <DataAnnotationsValidator />
+            <MudStack>
+
+                <MudTextField @bind-Value="@Model.Name" For="@(()=> Model.Name)" Label="Назва домівки"></MudTextField>
+                <MudNumericField @bind-Value="@Model.Area" Culture="@culture" Format="N2" Label="Площа" HideSpinButtons="true" Adornment="Adornment.End" AdornmentText="кв.м"></MudNumericField>
+                <MudTextField @bind-Value="@Model.Country" For="@(()=> Model.Country)" Label="Країна"></MudTextField>
+                <MudTextField @bind-Value="@Model.Region" For="@(()=> Model.Region)" Label="Область"></MudTextField>
+                <MudTextField @bind-Value="@Model.City" For="@(()=> Model.City)" Label="Місто"></MudTextField>
+                <MudTextField @bind-Value="@Model.Street" For="@(()=> Model.Street)" Label="Вулиця"></MudTextField>
+                <MudTextField @bind-Value="@Model.Building" For="@(()=> Model.Building)" Label="Будинок"></MudTextField>
+                <MudTextField @bind-Value="@Model.Apartment" For="@(()=> Model.Apartment)" Label="Квартира"></MudTextField>
+                <MudCheckBox @bind-Value="@Model.IsDefault" Label="Домівка за замовчанням"></MudCheckBox>
+            </MudStack>
+
+            @if (displayAlert)
+            {
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary />
+                        @foreach (var item in validationResult.ValidationErrors)
+                        {
+                            foreach (var field in item.Value)
+                            {
+                                @field
+                            }
+                        }
+                    </MudText>
+                </MudPaper>
+            }
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Відміна</MudButton>
+            <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit">
+                @if (IsEditMode)
+                {
+                    <span>Оновити</span>
+                }
+                else
+                {
+                    <span>Створити</span>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>
+}
+else {
+    <MudProgressCircular Style="margin:64px;" Indeterminate="true"/>
+}
+
+@code {
+    @inject ApiClient apiClient
+    @inject ISnackbar Snackbar
+
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Guid? HomeId { get; set; }
+
+    private HomeEditDto? Model { get; set; }
+
+    CultureInfo culture = CultureInfo.CurrentCulture;
+    private bool IsEditMode { get; set; }
+    bool displayAlert = false;
+    ValidationResult validationResult = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (HomeId == null)
+        {
+            Model = new HomeEditDto();
+        }
+        else
+        {
+            IsEditMode = true;
+            Model = await apiClient.Home_GetForEditAsync(HomeId.Value);
+        }
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task CreateUpdateHome(EditContext context)
+    {
+        try
+        {
+            var result = await apiClient.Home_PutAsync(Model!.Id, Model);
+
+            if (IsEditMode)
+            {
+                Snackbar.Add($"Home {result.Name} updated sccsessfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Home {result.Name} added", Severity.Success);
+            }
+
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+        catch (ApiException<ValidationResult> ex)
+        {
+            displayAlert = true;
+            validationResult = ex.Result;
+        }
+        catch
+        {
+            displayAlert = true;
+        }
+    }
+}

@@ -1,0 +1,147 @@
+﻿@page "/settings/utilities"
+@using MudBlazor.Utilities
+@using Web.Clients
+
+
+<MudGrid Spacing="4">
+    <MudItem xs="12" Class="mt-4">
+        <MudButton @onclick="@(()=>ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">Додати послугу</MudButton>
+    </MudItem>
+    <MudItem xs="12">
+        @if (errorMessage != null)
+        {
+            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+        }
+        @if (utilities is null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudDropContainer T="UtilityGroupViewModel" @ref="container" Items="utilities.OrderBy(x=>x.Priority)" ItemsSelector="@((item,dropzone) => true)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+                <ChildContent>
+                    <MudDropZone T="UtilityGroupViewModel" Identifier="Drop Zone 1" Class="flex-grow-1" AllowReorder="true">
+                    </MudDropZone>
+                </ChildContent>
+                <ItemRenderer>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        <MudIconButton Icon="fa-solid fa-edit" OnClick="(()=>ShowEditDialog(context))"></MudIconButton>
+                        <MudPaper Elevation="25" Class="pa-4 my-4" Width="100%">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <MudText>@context.Priority</MudText>
+                                <MudText>@context.Name</MudText>
+                                <MudIcon Icon="fa-solid fa-grip-lines"></MudIcon>
+                            </MudStack>
+                        </MudPaper>
+                        <MudIconButton Icon="fa-solid fa-trash" Color="Color.Error" OnClick="(()=>ShowDeleteModal(context))"></MudIconButton>
+                    </MudStack>
+
+                </ItemRenderer>
+            </MudDropContainer>
+        }
+    </MudItem>
+</MudGrid>
+
+@code {
+    @inject ApiClient apiClient ;
+    @inject IDialogService DialogService
+    @inject ISnackbar Snackbar
+
+    private ICollection<UtilityGroupViewModel>? utilities;
+    private string? errorMessage;
+    private MudDropContainer<UtilityGroupViewModel>? container;
+
+    private async Task ShowEditDialog(UtilityGroupViewModel utility)
+    {
+        var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Large, Position = DialogPosition.TopCenter };
+        var parameters = new DialogParameters<AddUtilityDialog>
+{
+    { x=>x.UtilityId, utility.Id }
+};
+        var dialog = await DialogService.ShowAsync<AddUtilityDialog>("Створити послугу", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await ReloadUtilities();
+        }
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Large, Position = DialogPosition.TopCenter };
+        var dialog = await DialogService.ShowAsync<AddUtilityDialog>("Створити послугу", options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await ReloadUtilities();
+        }
+    }
+
+    private async Task ShowDeleteModal(UtilityGroupViewModel utility)
+    {
+        var parameters = new DialogParameters<SimpleDialog_Template>
+{
+    { x => x.ContentText, "Ви дійсно хочете видалити цю послугу? Усі тарифи, та чеки, які її використовують, будуть видалені. Цю дію неможливо відмінити." },
+    { x => x.ButtonText, "Видалити" },
+    { x => x.Color, Color.Error }
+};
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Видалити", parameters, options);
+        var result = await dialog.Result;
+
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                await apiClient.Utilities_DeleteAsync(utility.Id);
+                this.Snackbar.Add($"Послуга {utility.Name} видалена", Severity.Success);
+
+                await ReloadUtilities();
+            }
+            catch (ApiException ex)
+            {
+                this.Snackbar.Add($"Помилка при видаленні {utility.Name}. {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await ReloadUtilities();
+    }
+
+    private async void ItemUpdated(MudItemDropInfo<UtilityGroupViewModel> dropItem)
+    {
+        if (utilities is null)
+        {
+            return;
+        }
+
+        utilities.UpdateOrder(dropItem, item => item.Priority, 0);
+        container!.Refresh();
+
+        foreach (var item in utilities)
+        {
+            await apiClient.Utilities_PutAsync(item.Id, new UtilityGroupEditModel() { Id = item.Id, Name = item.Name, Priority = item.Priority });
+        }
+    }
+
+    private async Task ReloadUtilities()
+    {
+        try
+        {
+            utilities = await apiClient.Utilities_GetAllAsync();
+            StateHasChanged();
+            container!.Refresh();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

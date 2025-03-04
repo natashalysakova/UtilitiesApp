@@ -1,0 +1,35 @@
+﻿@using Web.Clients
+@using Web.NavigationServices
+
+@if (filtered is not null && filtered.Any())
+{
+    <MudText Typo="Typo.h6">Додаткові фіксовані платежі</MudText>
+
+    <MudDataGrid Items="@filtered" Bordered="true" Dense="true"
+                 SortMode="SortMode.None">
+        <Columns>
+            <PropertyColumn Property="x=>x.Tariff.FixedPayName" StickyLeft="true" Title="Послуга" Editable="false" />
+            <PropertyColumn Format="C" Property="x=>x.Tariff.FixedPay" Editable="false" Title="Ціна" />
+        </Columns>
+    </MudDataGrid>
+}
+
+@code {
+    @inject CheckCalculateService service;
+
+    [Parameter, EditorRequired]
+    public required ICollection<RecordEditDto> Model { get; set; }
+    private IEnumerable<RecordEditDto>? filtered;
+
+    protected override void OnInitialized()
+    {
+        DoFiltering();
+        service.OnModelUpdated += DoFiltering;
+    }
+
+    void DoFiltering()
+    {
+        filtered = Model.Where(x => x.Tariff.TariffType != TariffType.Fixed && x.Tariff.UseFixedPay);
+        StateHasChanged();
+    }
+}

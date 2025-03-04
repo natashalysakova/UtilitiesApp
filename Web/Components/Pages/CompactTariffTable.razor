@@ -1,0 +1,112 @@
+﻿@using Web.Clients
+
+@if (Model != null)
+{
+    <MudTable Items="Model" Dense="true" Class="pa-3" Elevation="@Elevation" Breakpoint="Breakpoint.None">
+        <HeaderContent>
+            <MudTh>Послуга</MudTh>
+            <MudTh>Ціна за од.</MudTh>
+            @if (ShowDateColumn)
+            {
+                <MudTh>Початок дії</MudTh>
+            }
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Назва послуги">
+                @context.UtilityGroupName&nbsp;
+                @if (context.UseLimits)
+                {
+                    <MudIconButton Class="pt-0 pb-0" Size="Size.Small"
+                    Icon="fa-solid fa-circle-exclamation" Color="Color.Warning"
+                    OnClick="(()=>context.ShowDetails = !context.ShowDetails)" />
+                }
+            </MudTd>
+            @{
+                MarkupString price = default;
+                switch (context.TariffType)
+                {
+                    case TariffType.HouseHoldArea:
+                        price = (MarkupString)$"{context.Cost.ToString("C")}&nbsp;/&nbsp;м<sup>2</sup>";
+                        break;
+                    case TariffType.Meters:
+                        price = (MarkupString)$"{context.Cost.ToString("C")}&nbsp;/&nbsp;{context.Units}";
+                        break;
+                    default:
+                        price = (MarkupString)context.Cost.ToString("C");
+                        break;
+                }
+            }
+            <MudTd DataLabel="Ціна">
+
+                @price
+            </MudTd>
+            @if (ShowDateColumn)
+            {
+                <MudTd DataLabel="Початок дії">@context.StartDate.ToString("d")</MudTd>
+            }
+        </RowTemplate>
+        <ChildRowContent>
+            @if (context.ShowDetails && context.UseLimits)
+            {
+
+                <MudTr Style="background-color:var(--mud-palette-background)">
+                    <MudTd colspan="3">
+                        <i class="fa-solid fa-road-barrier mud-warning-text"></i> Ліміти
+                    </MudTd>
+                </MudTr>
+
+                @foreach (var limit in context.Limits.OrderBy(x => x.Limit))
+                {
+                    <MudTr Class="table-child-row">
+                        <MudTd DataLabel="Верхній ліміт" Style="text-align: right;">
+                            <span class="pl-3">
+                                > @limit.Limit.ToString(".")&nbsp;@context.Units
+                            </span>
+                        </MudTd>
+                        @{
+                            var price = $"{@limit.CostAfterLimit.ToString("C")} / {context.Units}";
+                        }
+
+                        <MudTd DataLabel="Ціна після ліміту">@price</MudTd>
+                        <MudTd />
+                    </MudTr>
+                }
+            }
+            @if (context.UseAdditionalFee && context.AdditionalFeeCost != null)
+            {
+                <MudTr Class="table-child-row">
+                    <MudTd DataLabel="Додатковий тариф">
+                        <i class="fa-solid fa-plus pl-3"></i>
+                        @context.AdditionalFeeName
+                    </MudTd>
+                    <MudTd colspan="2">
+                        @context.AdditionalFeeCost.Value.ToString("C") / @context.Units
+                    </MudTd>
+                </MudTr>
+            }
+            @if (context.UseFixedPay && context.FixedPay != null)
+            {
+                <MudTr Class="table-child-row">
+                    <MudTd DataLabel="Додатковий платіж">
+                        <i class="fa-solid fa-plus pl-3"></i>
+                        @context.FixedPayName
+                    </MudTd>
+                    <MudTd colspan="2">
+                        @context.FixedPay.Value.ToString("C")
+                    </MudTd>
+                </MudTr>
+            }
+        </ChildRowContent>
+    </MudTable>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required ICollection<TariffViewDto> Model { get; set; }
+
+    [Parameter]
+    public bool ShowDateColumn { get; set; } = true;
+
+    [Parameter]
+    public int Elevation { get; set; } = 2;
+}

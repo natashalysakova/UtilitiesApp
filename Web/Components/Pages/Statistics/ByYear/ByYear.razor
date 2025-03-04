@@ -1,0 +1,57 @@
+﻿@using ApexCharts;
+@using Web.Clients
+@using System.Globalization;
+
+@if (Checks is null)
+{
+    return;
+}
+
+@{
+    var title = $"Споживання за " + (yearSelected == 0 ? "усі роки" : yearSelected + " рік");
+}
+
+<MudSelect Variant="Variant.Outlined" T="int" @bind-Value="@yearSelected" SelectedValuesChanged="ReloadCharts">
+    <MudSelectItem Value="0">Усі роки</MudSelectItem>
+    @foreach (var item in yearsList)
+    {
+        <MudSelectItem Value="@item">@item</MudSelectItem>
+    }
+</MudSelect>
+
+<ByYearMetersApex SelectedYear="@yearSelected" Checks="@Checks"></ByYearMetersApex>
+<MudExpansionPanels>
+    <MudExpansionPanel Text="За обсягом спожитого" >
+        <ByYearVolume SelectedYear="@yearSelected" Checks="@Checks"></ByYearVolume>
+    </MudExpansionPanel>
+    <MudExpansionPanel Text="Не фіксовані платежі" >
+        <ByYearNotFixedApex SelectedYear="@yearSelected" Checks="@Checks"></ByYearNotFixedApex>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<CheckViewDto>? Checks { get; set; }
+
+    private int yearSelected = 0;
+    private IEnumerable<int> yearsList = new List<int>();
+
+    private void ReloadCharts()
+    {
+        StateHasChanged();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Checks != null)
+        {
+            yearsList = Checks.Select(x => x.Date.Year).Distinct().Order();
+            yearSelected = 0;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+
+    }
+}

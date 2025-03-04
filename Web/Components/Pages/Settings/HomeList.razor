@@ -1,0 +1,197 @@
+﻿@using Web.Clients
+@using Web.NavigationServices
+@page "/settings/homes"
+
+@inject ApiClient apiClient
+@inject MenuUpdateService navigationService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudGrid Spacing="4">
+    <MudItem xs="12" Class="mt-4">
+        <MudButton @onclick="ShowCreateDialog" Variant="Variant.Filled" Color="Color.Primary">Нова домівка</MudButton>
+    </MudItem>
+
+    @if (homes is null)
+{
+for (int i = 0; i < 3; i++)
+{
+    <MudCard>
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
+                <MudCardContent>
+                    <MudSkeleton Width="30%" Height="42px;" />
+                    <MudSkeleton Width="80%" />
+                    <MudSkeleton Width="100%" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudSkeleton Width="64px" Height="40px" Class="ml-2" />
+                    <MudSkeleton Width="105px" Height="40px" Class="ml-3" />
+                </MudCardActions>
+            </MudCard>
+}
+}
+else
+{
+
+    @foreach (var home in homes)
+{
+    <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            @{
+                        string icon = "fa-solid fa-house";
+                        Color color = Color.Default;
+                        if (home.IsDefault)
+                        {
+                            icon = "fa-solid fa-house-user";
+                            color = Color.Success;
+                        }
+                        var url = $"home/{home.Id}/tariffs";
+                    }
+                            <MudStack Row="true">
+                                <MudIcon Icon="@icon" Style="font-size:1.5rem;" Color="@color" />
+                                <MudText Typo="Typo.h6">@home.Name</MudText>
+                                <MudSpacer></MudSpacer>
+                                <MudButton Href="@url" Variant="Variant.Filled">Тарифи</MudButton>
+
+                            </MudStack>
+                            <MudText Inline="true">(@home.Area.ToString(".00") М<sup>2</sup>)</MudText>
+
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText>
+                            @home.Street @home.Building @home.Apartment <br />
+                            @home.City, @home.Region <br />
+                            @home.Country <br />
+                        </MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudTooltip Text="Видалити">
+                            <MudIconButton Icon="fa fa-trash" Color="Color.Error" OnClick="(()=>ShowDeleteModal(home))"></MudIconButton>
+                        </MudTooltip>
+                        <MudSpacer />
+                        @if (!home.IsDefault)
+                {
+                    <MudTooltip Text="За замовчанням">
+                                <MudIconButton Icon="fa fa-house-user" OnClick="(()=>ShowSetAsDefaultModal(home))" Color="Color.Success"></MudIconButton>
+                            </MudTooltip>
+                }
+                        <MudTooltip Text="Редагувати">
+                            <MudIconButton Icon="fa fa-edit" OnClick="(()=>ShowEditDialog(home))" Color="Color.Default" />
+                        </MudTooltip>
+
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+}
+}
+</MudGrid>
+
+
+
+@code {
+
+private ICollection<HomeViewDto>? homes;
+
+protected override async Task OnInitializedAsync()
+{
+homes = await apiClient.Home_GetAllAsync();
+}
+
+private async Task ShowCreateDialog()
+{
+var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Medium };
+var dialog = await DialogService.ShowAsync<AddHomeDialog>("Add Home", options);
+var result = await dialog.Result;
+
+if (result != null && !result.Canceled)
+{
+    await refreshList();
+}
+}
+
+private async Task ShowEditDialog(HomeViewDto home)
+{
+var parameters = new DialogParameters<AddHomeDialog> { { x => x.HomeId, home.Id } };
+var options = new DialogOptions() { BackdropClick = false };
+var dialog = await DialogService.ShowAsync<AddHomeDialog>(home.Name, parameters, options);
+var result = await dialog.Result;
+
+if (result is not null or { Canceled: true })
+{
+    await refreshList();
+}
+}
+
+private async Task ShowDeleteModal(HomeViewDto type)
+{
+var parameters = new DialogParameters<SimpleDialog_Template>
+{
+    { x => x.ContentText, "Do you really want to delete this house? All related tariffs and checks will be deleted as well. This process cannot be undone." },
+    { x => x.ButtonText, "Delete" },
+    { x => x.Color, Color.Error }
+};
+
+var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Delete", parameters, options);
+var result = await dialog.Result;
+
+
+if (result != null && !result.Canceled)
+{
+    try
+    {
+        await apiClient.Home_DeleteAsync(type.Id);
+        this.Snackbar.Add($"Home {type.Name} deleted", Severity.Success);
+        await refreshList();
+    }
+    catch (ApiException ex)
+    {
+        this.Snackbar.Add($"Failed to delete home {type.Name}. {ex.Message}", Severity.Error);
+    }
+}
+}
+
+private async Task ShowSetAsDefaultModal(HomeViewDto type)
+{
+var parameters = new DialogParameters<SimpleDialog_Template>
+{
+    { x => x.ContentText, $"Are you sure you want to set {type.Name} as your default home?" },
+    { x => x.ButtonText, "Set as Default" },
+    { x => x.Color, Color.Warning }
+};
+
+var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Set as default", parameters, options);
+var result = await dialog.Result;
+
+if (result is not null or { Canceled: true })
+{
+    try
+    {
+        await apiClient.Home_PostSetDefaultActionAsync(type.Id);
+        this.Snackbar.Add($"Home {type.Name} was set as default", Severity.Success);
+        await refreshList();
+    }
+    catch (ApiException ex)
+    {
+        this.Snackbar.Add($"Failed to set home {type.Name} as default. {ex.Message}", Severity.Error);
+    }
+
+
+}
+}
+
+private async Task refreshList()
+{
+homes = await apiClient.Home_GetAllAsync();
+navigationService.HomesUpdated();
+}
+}

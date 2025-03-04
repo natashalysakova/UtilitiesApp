@@ -1,0 +1,53 @@
+﻿@using Web.Clients
+@using Web.NavigationServices
+
+@inject MenuUpdateService navigationService
+@inject ApiClient client
+
+<MudNavMenu Style="font-size: 1rem;" Color="Color.Primary">
+
+    @if (navItems != null)
+    {
+        @foreach (var link in navItems)
+        {
+            var url = "/home/" + link.Id;
+            string icon;
+            if (link.IsDefault)
+            {
+                icon = "fa-solid fa-house-user";
+            }
+            else
+            {
+                icon = "fa-solid fa-house";
+            }
+            <MudNavLink Href="@url" Icon="@icon" Match="NavLinkMatch.Prefix">@link.Name</MudNavLink>
+        }
+    }
+    <MudNavGroup Title="Налаштування" Expanded="true" Icon="@Icons.Material.Outlined.Settings">
+        @*<MudNavLink Href="/settings" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.AppSettingsAlt">Загальні</MudNavLink>*@
+        <MudNavLink Href="/settings/homes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.HomeWork">Домівки</MudNavLink>
+        <MudNavLink Href="/settings/tariffs" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AttachMoney">Тарифи</MudNavLink>
+        <MudNavLink Href="/settings/utilities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ElectricMeter">Послуги</MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>
+
+@code {
+    IEnumerable<HomeViewDto>? navItems;
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (navItems == null)
+            navItems = await client.Home_GetAllAsync();
+
+        navigationService.LinksChanged += UpdateNavMenu;
+    }
+
+    private void UpdateNavMenu(object? sender, EventArgs args)
+    {
+        this.InvokeAsync(() =>
+        {
+            navItems = client.Home_GetAllAsync().Result;
+            StateHasChanged();
+        });
+    }
+}

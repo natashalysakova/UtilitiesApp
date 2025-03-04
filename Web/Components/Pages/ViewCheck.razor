@@ -1,0 +1,257 @@
+﻿@page "/home/{HouseId}/checks/{CheckId}"
+@using Web.Clients;
+
+<style>
+    .stick {
+        background-color: var(--mud-palette-background-gray);
+    }
+
+    .table-text {
+        text-align: end;
+    }
+</style>
+
+@if (Model != null)
+{
+    <MudPaper Style="width:fit-content; padding:4px; margin:auto;">
+        <MudPaper id="check" Square="true" Elevation="0"
+                  Style="padding:24px; width:fit-content; align-items: center">
+
+            <MudText Typo="Typo.h4">Рахунок за @Model.Date.ToShortDateString()</MudText>
+
+
+            <MudTable T="RecordViewDto" Items="Model.Records.Where(x=>x.Cost!= 0)" Hover="true" Dense="true" Class="mt-3" CustomFooter="true" Elevation="0" Style="width: fit-content;">
+                @*             <ColGroup>
+                <col style="width: auto"/>
+                <col style="width: 100px" />
+                <col style="width: 100px" />
+                <col style="width: 100px" />
+                <col style="width: 0" />
+            </ColGroup> *@
+                <RowTemplate>
+                    <MudTd Class="table-text stick">@context.Tariff.UtilityGroupName</MudTd>
+                    <MudTd Class="table-text">@context.Tariff.Units</MudTd>
+
+                    <MudTd>
+                        @if (context.Tariff.TariffType is TariffType.Meters)
+                        {
+                            <MudStack Row="true" Justify="Justify.FlexEnd">
+                                <MudText Color="Color.Warning" Style="font-weight:bold">@context.Measure.ToString("0.####")</MudText>
+                                <MudText>-</MudText>
+                                <MudText>@context.PreviousMeasure.ToString("0.####")</MudText>
+                                <MudText>=</MudText>
+                            </MudStack>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        @if (context.Tariff.TariffType is not (TariffType.Fixed or TariffType.NotFixedPayment))
+                        {
+                            <MudStack Row="true" Justify="Justify.FlexEnd" AlignItems="AlignItems.Baseline">
+                                @if (context.Tariff.TariffType is TariffType.HouseHoldArea)
+                                {
+                                    <MudText>@context.Tariff.Home.Area.ToString("0.####") м<sup>2</sup></MudText>
+                                }
+                                else if (context.Tariff.TariffType is TariffType.Volume)
+                                {
+                                    <MudText Color="Color.Success" Style="font-weight:bold">@context.Measure.ToString("0.####")</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Color="Color.Success" Style="font-weight:bold">@context.Difference.ToString("0.####")</MudText>
+                                }
+                                <MudText>*</MudText>
+                                <MudText>@context.Tariff.Cost.ToString("C")</MudText>
+                                <MudText>=</MudText>
+                            </MudStack>
+                        }
+                    </MudTd>
+                    <MudTd Class="stick">
+                        <MudText Class="table-text" Style="font-weight:bold">@context.Cost.ToString("C")</MudText>
+                    </MudTd>
+                </RowTemplate>
+                <ChildRowContent>
+                    @if (context.Tariff.UseAdditionalFee)
+                    {
+                        <MudTr>
+                            <MudTd Class="table-text stick">@context.Tariff.AdditionalFeeName</MudTd>
+                            <MudTd Class="table-text">@context.Tariff.Units</MudTd>
+
+                            <MudTd colspan="2">
+                                @if (context.Tariff.TariffType is not TariffType.Fixed)
+                                {
+                                    <MudStack Row="true" Justify="Justify.FlexEnd">
+                                        @if (context.Tariff.TariffType is TariffType.Volume)
+                                        {
+                                            <MudText Color="Color.Success" Style="font-weight:bold">@context.Measure.ToString("0.####")</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText Color="Color.Success" Style="font-weight:bold">@context.Difference.ToString("0.####")</MudText>
+                                        }
+                                        <MudText>*</MudText>
+                                        <MudText>@context.Tariff.AdditionalFeeCost!.Value.ToString("C")</MudText>
+                                        <MudText>=</MudText>
+                                    </MudStack>
+                                }
+                            </MudTd>
+                            <MudTd Class="stick">
+                                <MudText Class="table-text" Style="font-weight:bold">@context.AdditionalSum.ToString("C")</MudText>
+                            </MudTd>
+                        </MudTr>
+                    }
+                    @if (context.Tariff.UseFixedPay)
+                    {
+                        <MudTr>
+                            <MudTd Class="table-text stick">@context.Tariff.FixedPayName</MudTd>
+                            <MudTd colspan="3"></MudTd>
+                            <MudTd Class="stick">
+                                <MudText Class="table-text" Style="font-weight:bold">@context.Tariff.FixedPay!.Value.ToString("C")</MudText>
+                            </MudTd>
+                        </MudTr>
+                    }
+                </ChildRowContent>
+                <FooterContent>
+                    <MudTFootRow>
+                        <MudTd colspan="4" Class="table-text">
+                            <MudText Class="table-text " Style="font-weight:bold;">
+                                Всього:
+                            </MudText>
+                        </MudTd>
+                        <MudTd Class="table-text stick">
+                            <MudText Class="table-text " Style="font-weight:bold">@Model.Amount.ToString("C")</MudText>
+                        </MudTd>
+                    </MudTFootRow>
+                </FooterContent>
+            </MudTable>
+            <MudStack Row="true" Justify="Justify.SpaceEvenly" Class="mt-3">
+                <MudText>
+                    <MudIcon Icon="fa-solid fa-square" Color="Color.Warning" Size="Size.Small" />
+                    Поточний показник лічільника
+                </MudText>
+                <MudText>
+                    <MudIcon Icon="fa-solid fa-square" Color="Color.Success" Size="Size.Small" />
+                    Спожитий обсяг
+                </MudText>
+            </MudStack>
+        </MudPaper>
+
+        <MudStack Row="true" Class="pa-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="fa-solid fa-trash" @onclick="async ()=>{ await ShowDeleteModal(Model);}">Видалити</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="fa-solid fa-edit" Href="@($"/home/{HouseId}/checks/{CheckId}/edit")">Редагувати</MudButton>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="fa-solid fa-copy" @onclick="MakeScreenshot">Скопіювати</MudButton>
+        </MudStack>
+    </MudPaper>
+
+}
+else if (errorMessage != null)
+{
+    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+}
+else
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+
+<script src="/lib/html2canvas/html2canvas.min.js"></script>
+<script>
+    function makeScreenshot(){
+        var doc = document.querySelector("#check");
+
+        if (typeof ClipboardItem === 'undefined') {
+            console.error('ClipboardItem is not defined');
+            html2canvas(doc)
+            .then(canvas => {
+                var link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'div-image.png';
+                link.click();
+            });
+            return false;
+        } else {
+            html2canvas(doc)
+            .then(canvas => {
+                canvas.toBlob(function(blob) {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    navigator.clipboard.write([item]);
+                });
+            });
+            return true;
+        }
+    }
+</script>
+
+@code {
+    [Parameter]
+    public string HouseId { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CheckId { get; set; } = string.Empty;
+
+    @inject ApiClient apiClient
+    @inject IJSRuntime JsRuntime
+    @inject ISnackbar Snackbar
+    @inject IDialogService DialogService
+    @inject NavigationManager NavigationManager
+
+    CheckViewDto? Model { get; set; }
+    string? errorMessage;
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (Guid.TryParse(CheckId, out var checkId))
+        {
+            try
+            {
+                errorMessage = null;
+                Model = await apiClient.Check_GetAsync(checkId);
+            }
+            catch (ApiException exception)
+            {
+                errorMessage = exception.Message;
+            }
+        }
+    }
+
+    private async Task MakeScreenshot()
+    {
+        var result = await JsRuntime.InvokeAsync<bool>("makeScreenshot");
+        if (result)
+        {
+            Snackbar.Add("Зображення скопійовано в буфер обміну", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Зображення завантажено", Severity.Success);
+        }
+    }
+
+    private async Task ShowDeleteModal(CheckViewDto check)
+    {
+        var parameters = new DialogParameters<SimpleDialog_Template>
+        {
+            { x => x.ContentText, "Ви дійсно хочете видалити цей чек? Цей процес не можна скасувати." },
+            { x => x.ButtonText, "Видалити" },
+            { x => x.Color, Color.Error }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Delete", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                await apiClient.Check_DeleteAsync(check.Id);
+                this.Snackbar.Add($"Чек за {check.Date.ToShortDateString()} з будинку {check.Home.Name} видалено", Severity.Success);
+                NavigationManager.NavigateTo($"/home/{HouseId}");
+            }
+            catch (ApiException ex)
+            {
+                this.Snackbar.Add($"Помилка при видаленні чеку {check.Date.ToShortDateString()} з будинку {check.Home.Name}. {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

@@ -1,0 +1,69 @@
+﻿@using Web.Clients
+
+@if (model != null)
+{
+    <MudDialog Style="height:auto;">
+        <DialogContent>
+            <MudStack Spacing="2">
+                <MudText>Ви дійсно хочете деактивувати тариф?</MudText>
+                <MudText>Щоб підтвердити дію, введіть останній день дії тарифу та підтвердіть деактивацію</MudText>
+
+                <MudDatePicker @bind-Date="@model.EndDate" For="@(()=> model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="Дата кінця" />
+                <MudCheckBox @bind-Value="@createNew">Додати новий тариф на основі того, що деактивується?</MudCheckBox>
+                @if (errorMessage != null)
+                {
+                    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+                }
+            </MudStack>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Скасувати</MudButton>
+            <MudButton Color="@Color.Warning" Variant="Variant.Filled" OnClick="Submit">Деактивувати</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+@code {
+    @inject ApiClient apiClient;
+
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Guid? TariffId { get; set; }
+
+    private TariffEditDto? model;
+    private string? errorMessage = null;
+    bool createNew = true;
+
+    private async Task Submit()
+    {
+        errorMessage = null;
+        try
+        {
+            var result = await apiClient.Tariffs_PutAsync(model!.Id, model);
+            MudDialog.Close(DialogResult.Ok<bool>(createNew));
+        }
+        catch (ApiException ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (TariffId != null)
+        {
+            try
+            {
+                model = await apiClient.Tariffs_GetForEditAsync(TariffId.Value);
+            }
+            catch (ApiException ex)
+            {
+                errorMessage = ex.Message;
+            }
+        }
+    }
+}

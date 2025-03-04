@@ -1,0 +1,95 @@
+﻿@using System.Globalization
+@using Web.Clients
+@using Web.NavigationServices
+
+@if (filtered != null && filtered.Any())
+{
+    <MudText Typo="Typo.h6">Показники лічільників</MudText>
+    <MudDataGrid T="RecordEditDto" Items="@filtered"
+    Bordered="true" Dense="true"
+    EditMode="DataGridEditMode.Cell" ReadOnly="false"
+    SortMode="SortMode.None">
+        <Columns>
+            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" HeaderStyle="width:auto;" StickyLeft="true" Title="Послуга" Editable="false" />
+            <PropertyColumn CellClass="align-baseline" HeaderStyle="width:15%;" Property="x=>x.PreviousMeasure" Title="Минуле" Editable="true">
+                <EditTemplate>
+                    <MudField Style="padding:0;" Adornment="Adornment.End" AdornmentText="@context.Item.Tariff.Units">
+                        @context.Item.PreviousMeasure.ToString("0.##")
+                    </MudField>
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn HeaderStyle="width:20%; min-width:150px;" Property="x=>x.Measure" Title="Поточне" Culture="@culture"
+            CellClass="visible-input" HeaderClass="visible-input">
+                <EditTemplate>
+                    <MudNumericField @bind-Value="context.Item.Measure"
+                    Culture="@culture" Format="0.00##"
+                    HideSpinButtons="true"
+                    Adornment="Adornment.End"
+                    AdornmentText="@context.Item.Tariff.Units"
+                    TextChanged="@(async()=>{ await CommittedItemChanges(context.Item);})"></MudNumericField>
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn HeaderStyle="width:15%;" Property="x=>x.Difference" Title="Різниця">
+                <EditTemplate>
+                    <MudField Adornment="Adornment.End" AdornmentText="@context.Item.Tariff.Units">
+                        @context.Item.Difference.ToString("0.##")
+                    </MudField>
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn HeaderStyle="width:15%;" Property="x=>x.Tariff.Cost" Format="C" Editable="false" Title="Ціна" />
+            <PropertyColumn HeaderStyle="width: 15%" Property="x=>x.Cost" Title="Сума" Format="C" StickyRight="true" Editable="false" />
+        </Columns>
+    </MudDataGrid>
+}
+
+
+@code {
+    @inject CheckCalculateService service;
+    @inject ApiClient apiClient;
+    @inject ILogger<MetersTariffTable> logger;
+
+    private CultureInfo culture = CultureInfo.CurrentCulture;
+
+    [Parameter, EditorRequired]
+    public required ICollection<RecordEditDto> Model { get; set; }
+
+    [Parameter, EditorRequired]
+    public bool IsZeroCheck { get; set; }
+
+    private IEnumerable<RecordEditDto>? filtered;
+
+    protected override void OnInitialized()
+    {
+        logger.LogInformation("OnInitialized");
+        if (Model != null)
+        {
+            logger.LogInformation("OnInitialized ModelNotNull");
+            service.OnModelUpdated += DoFiltering;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        DoFiltering();
+    }
+
+    void DoFiltering()
+    {
+        if (Model == null)
+            return;
+        logger.LogInformation("DoFiltering");
+        filtered = Model.Where(x => x.Tariff.TariffType is TariffType.Meters);
+        StateHasChanged();
+    }
+
+    async Task CommittedItemChanges(RecordEditDto item)
+    {
+        logger.LogInformation("CommittedItemChanges = " + item.Measure);
+
+        var result = await apiClient.Check_PostCalculateAction2Async(item, IsZeroCheck);
+        item.Cost = result.Cost;
+        item.Difference = result.Difference;
+        item.AdditionalSum = result.AdditionalSum;
+        service.RequestRefresh();
+    }
+}

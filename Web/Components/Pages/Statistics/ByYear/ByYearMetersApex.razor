@@ -1,0 +1,101 @@
+﻿@using ApexCharts;
+@using Web.Clients
+@using System.Globalization;
+
+@if (Checks is null || !Checks.Any())
+{
+return;
+}
+
+@{
+    var title = $"Споживання по лічільнику за " + (SelectedYear == 0 ? "усі роки" : SelectedYear + " рік");
+}
+
+<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="chart1" Title="@title" Options="@options">
+
+    @{
+var utilities = Checks
+.SelectMany(x => x.Records)
+.Where(x => x.Tariff.TariffType is TariffType.Meters)
+.Select(x => x.Tariff)
+.DistinctBy(x => x.UtilityGroupId)
+.ToDictionary(x => x.UtilityGroupId, x => x.UtilityGroupName);
+
+foreach (var utility in utilities)
+{
+    if (SelectedYear != 0)
+    {
+        var byMonth = Checks
+        .Where(x => x.Date.Year == SelectedYear && x.IsZeroCheck == false)
+        .GroupBy(x => x.Date)
+        .OrderBy(x => x.Key);
+
+        <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
+                                 Items="byMonth"
+                                 Name="@utility.Value"
+                                 SeriesType="SeriesType.Line"
+                                 XValue="@(e => e.Key)"
+                                 YAggregate="@(e => e.Sum(e => e.SelectMany(x=>x.Records).Where(x=>x.Tariff.UtilityGroupId == utility.Key).Sum(x=> x.Difference)))"
+                                 OrderByDescending="e=>e.X" />
+    }
+    else
+    {
+        var byMonth = Checks
+        .Where(x => x.IsZeroCheck == false)
+        .GroupBy(x => x.Date)
+        .OrderBy(x => x.Key);
+
+        <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
+                                 Items="byMonth"
+                                 Name="@utility.Value"
+                                 SeriesType="SeriesType.Line"
+                                 XValue="@(e => e.Key)"
+                                 YAggregate="@(e => e.Sum(e => e.SelectMany(x=>x.Records).Where(x=>x.Tariff.UtilityGroupId == utility.Key).Sum(x=>x.Difference)))"
+                                 OrderByDescending="e=>e.X" />
+            }
+        }
+    }
+</ApexChart>
+
+@code {
+[Parameter, EditorRequired]
+public IEnumerable<CheckViewDto>? Checks { get; set; }
+[Parameter, EditorRequired]
+public int SelectedYear { get; set; }
+
+private ApexChart<IGrouping<DateTime, CheckViewDto>>? chart1;
+private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
+
+
+protected override void OnParametersSet()
+{
+chart1?.RenderAsync();
+}
+
+protected override void OnInitialized()
+{
+options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
+    {
+        Debug = true,
+        Theme = new Theme
+        {
+            Mode = Mode.Dark,
+            Palette = PaletteType.Palette1,
+        },
+
+        Chart = new Chart
+        {
+            Toolbar = new Toolbar
+            {
+                Show = false
+            }
+        },
+
+        Xaxis = new XAxis()
+        {
+            Type = XAxisType.Datetime
+        },
+        Stroke = new Stroke { Curve = Curve.Smooth },
+    };
+}
+}
