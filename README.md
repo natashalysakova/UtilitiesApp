@@ -2,6 +2,9 @@
 
 This project is a Blazor application built with .NET 9, consisting of multiple services including a MySQL database, a migration service, an API service, and a web frontend. The application is designed to provide a comprehensive utility management system with various statistical views and data management capabilities.
 
+## AppHost Project
+The AppHost project is an Aspire project. It can be used to deploy and run the entire application stack in a containerized environment (like Azure). It's not needed if docker is used. Otherwise run `http` or `https` launch profiles to get fancy Aspire dashboard and some basic telemetry.
+
 ## Running the Project with Docker Compose
 
 To run the project using Docker Compose, follow these steps:
