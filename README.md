@@ -1,9 +1,14 @@
 # Utilities App
 
-This project is a Blazor application built with .NET 9, consisting of multiple services including a MySQL database, a migration service, an API service, and a web frontend. The application is designed to provide a comprehensive utility management system with various statistical views and data management capabilities.
+The application is designed to provide a comprehensive utility services management system.
+This is a Blazor application built with .NET 9, consisting of multiple services including an API service, a migration service and a web frontend. 
+
+<img width="1000" alt="Main view" src="https://github.com/user-attachments/assets/c4d09252-105c-4228-86d1-1ea73e2f6e0a" />
+<img width="1000" alt="Check view" src="https://github.com/user-attachments/assets/bceee779-5b26-49c9-94d7-48c267b359f3" />
 
 ## AppHost Project
-The AppHost project is an Aspire project. It can be used to deploy and run the entire application stack in a containerized environment (like Azure). It's not needed if docker is used. Otherwise run `http` or `https` launch profiles to get fancy Aspire dashboard and some basic telemetry.
+The AppHost project is an Aspire project. It can be used to deploy and run the entire application stack in a containerized environment (like Azure). It's not needed if docker is used. Otherwise use `http` or `https` launch profiles to get fancy Aspire dashboard and some basic telemetry.
+<img width="1000" alt="Aspire dashboard" src="https://github.com/user-attachments/assets/372bf749-cde8-42a1-ab20-639402ddf1d2" />
 
 ## Running the Project with Docker Compose
 
@@ -26,6 +31,7 @@ docker compose up -d
 
 4. **Access the application**:
    - Once the services are up and running, you can access the web frontend by navigating to `http://localhost:10002` in your web browser.
+   - `migrationservice` will be shut down after initial run, that's fine, it's needed only for database initialization.
 
 5. **Stopping the services**:
    - To stop the running services, use the following command:
@@ -47,4 +53,4 @@ docker compose up -d # restart services
 docker compose down #stop and remove the container
 git pull
 docker compose up -d --build
-```   
+```
