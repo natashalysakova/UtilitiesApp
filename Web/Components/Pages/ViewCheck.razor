@@ -1,5 +1,10 @@
 ﻿@page "/home/{HouseId}/checks/{CheckId}"
-@using Web.Clients;
+
+@inject ApiClient ApiClient
+@inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 <style>
     .stick {
@@ -144,9 +149,9 @@
     </MudPaper>
 
 }
-else if (errorMessage != null)
+else if (_errorMessage != null)
 {
-    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+    <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
 }
 else
 {
@@ -188,27 +193,21 @@ else
     [Parameter]
     public string CheckId { get; set; } = string.Empty;
 
-    @inject ApiClient apiClient
-    @inject IJSRuntime JsRuntime
-    @inject ISnackbar Snackbar
-    @inject IDialogService DialogService
-    @inject NavigationManager NavigationManager
-
     CheckViewDto? Model { get; set; }
-    string? errorMessage;
+    string? _errorMessage;
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         if (Guid.TryParse(CheckId, out var checkId))
         {
             try
             {
-                errorMessage = null;
-                Model = await apiClient.Check_GetAsync(checkId);
+                _errorMessage = null;
+                Model = await ApiClient.Check_GetAsync(checkId);
             }
             catch (ApiException exception)
             {
-                errorMessage = exception.Message;
+                _errorMessage = exception.Message;
             }
         }
     }
@@ -244,7 +243,7 @@ else
         {
             try
             {
-                await apiClient.Check_DeleteAsync(check.Id);
+                await ApiClient.Check_DeleteAsync(check.Id);
                 this.Snackbar.Add($"Чек за {check.Date.ToShortDateString()} з будинку {check.Home.Name} видалено", Severity.Success);
                 NavigationManager.NavigateTo($"/home/{HouseId}");
             }

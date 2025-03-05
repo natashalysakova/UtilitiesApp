@@ -1,8 +1,11 @@
-﻿@using Web.Clients
-@using Web.Extensions;
+﻿@using Web.Extensions;
 
 @page "/settings/tariffs"
 @page "/home/{HomeId}/tariffs"
+
+@inject ApiClient ApiClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <style>
     .mud-table-cell-custom-group {
@@ -22,11 +25,11 @@
         <MudButton @onclick="@(()=>ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">Додати тариф</MudButton>
     </MudItem>
     <MudItem xs="12">
-        @if (errorMessage != null)
+        @if (_errorMessage != null)
         {
-            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+            <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
         }
-        @if (tariffs is null)
+        @if (_tariffs is null)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -48,7 +51,7 @@
         {
             <MudExpansionPanels>
                 <MudExpansionPanel Text="Активні" Expanded="true">
-                    <MudTable Class="mb-4" Items="tariffs.CurrentlyActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinition"
+                    <MudTable Class="mb-4" Items="_tariffs.CurrentlyActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinition"
                               Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
                         <ColGroup>
                             @if (_groupDefinition.Expandable)
@@ -114,7 +117,7 @@
                     </MudTable>
                 </MudExpansionPanel>
                 <MudExpansionPanel Text="Неактивні" Expanded="false">
-                    <MudTable Class="mb-4" Items="tariffs.CurrentlyNotActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinitionNotActive"
+                    <MudTable Class="mb-4" Items="_tariffs.CurrentlyNotActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinitionNotActive"
                               Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
                         <ColGroup>
                             @if (_groupDefinition.Expandable)
@@ -183,16 +186,12 @@
 
 
 @code {
-    @inject ApiClient apiClient ;
-    @inject IDialogService DialogService
-    @inject ISnackbar Snackbar
-
-    private ICollection<TariffViewDto>? tariffs;
+    private ICollection<TariffViewDto>? _tariffs;
 
     [Parameter]
     public string? HomeId { get; set; }
 
-    private string? errorMessage;
+    private string? _errorMessage;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -206,16 +205,16 @@
         {
             if (Guid.TryParse(HomeId, out var guid))
             {
-                tariffs = await apiClient.Tariffs_GetAllAsync(guid);
+                _tariffs = await ApiClient.Tariffs_GetAllAsync(guid);
             }
             else
             {
-                tariffs = await apiClient.Tariffs_GetAllAsync();
+                _tariffs = await ApiClient.Tariffs_GetAllAsync();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            _errorMessage = ex.Message;
         }
     }
 
@@ -288,7 +287,7 @@
         {
             try
             {
-                await apiClient.Tariffs_DeleteAsync(type.Id);
+                await ApiClient.Tariffs_DeleteAsync(type.Id);
                 this.Snackbar.Add($"Тариф {type.UtilityGroupName} ({type.Home.Name}) видалено", Severity.Success);
                 await ReloadTariffs();
             }

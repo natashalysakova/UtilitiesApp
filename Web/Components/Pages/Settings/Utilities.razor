@@ -1,24 +1,26 @@
 ﻿@page "/settings/utilities"
 @using MudBlazor.Utilities
-@using Web.Clients
 
+@inject ApiClient ApiClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <MudGrid Spacing="4">
     <MudItem xs="12" Class="mt-4">
-        <MudButton @onclick="@(()=>ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">Додати послугу</MudButton>
+        <MudButton @onclick="@(ShowCreateDialog)" Variant="Variant.Filled" Color="Color.Primary">Додати послугу</MudButton>
     </MudItem>
     <MudItem xs="12">
-        @if (errorMessage != null)
+        @if (_errorMessage != null)
         {
-            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+            <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
         }
-        @if (utilities is null)
+        @if (_utilities is null)
         {
             <MudProgressCircular Indeterminate="true" />
         }
         else
         {
-            <MudDropContainer T="UtilityGroupViewModel" @ref="container" Items="utilities.OrderBy(x=>x.Priority)" ItemsSelector="@((item,dropzone) => true)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+            <MudDropContainer T="UtilityGroupViewModel" @ref="_container" Items="_utilities.OrderBy(x=>x.Priority)" ItemsSelector="@((item,dropzone) => true)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
                 <ChildContent>
                     <MudDropZone T="UtilityGroupViewModel" Identifier="Drop Zone 1" Class="flex-grow-1" AllowReorder="true">
                     </MudDropZone>
@@ -43,13 +45,9 @@
 </MudGrid>
 
 @code {
-    @inject ApiClient apiClient ;
-    @inject IDialogService DialogService
-    @inject ISnackbar Snackbar
-
-    private ICollection<UtilityGroupViewModel>? utilities;
-    private string? errorMessage;
-    private MudDropContainer<UtilityGroupViewModel>? container;
+    private ICollection<UtilityGroupViewModel>? _utilities;
+    private string? _errorMessage;
+    private MudDropContainer<UtilityGroupViewModel>? _container;
 
     private async Task ShowEditDialog(UtilityGroupViewModel utility)
     {
@@ -98,7 +96,7 @@
         {
             try
             {
-                await apiClient.Utilities_DeleteAsync(utility.Id);
+                await ApiClient.Utilities_DeleteAsync(utility.Id);
                 this.Snackbar.Add($"Послуга {utility.Name} видалена", Severity.Success);
 
                 await ReloadUtilities();
@@ -110,24 +108,24 @@
         }
     }
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await ReloadUtilities();
     }
 
     private async void ItemUpdated(MudItemDropInfo<UtilityGroupViewModel> dropItem)
     {
-        if (utilities is null)
+        if (_utilities is null)
         {
             return;
         }
 
-        utilities.UpdateOrder(dropItem, item => item.Priority, 0);
-        container!.Refresh();
+        _utilities.UpdateOrder(dropItem, item => item.Priority, 0);
+        _container!.Refresh();
 
-        foreach (var item in utilities)
+        foreach (var item in _utilities)
         {
-            await apiClient.Utilities_PutAsync(item.Id, new UtilityGroupEditModel() { Id = item.Id, Name = item.Name, Priority = item.Priority });
+            await ApiClient.Utilities_PutAsync(item.Id, new UtilityGroupEditModel() { Id = item.Id, Name = item.Name, Priority = item.Priority });
         }
     }
 
@@ -135,13 +133,13 @@
     {
         try
         {
-            utilities = await apiClient.Utilities_GetAllAsync();
+            _utilities = await ApiClient.Utilities_GetAllAsync();
             StateHasChanged();
-            container!.Refresh();
+            _container!.Refresh();
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            _errorMessage = ex.Message;
         }
     }
 }

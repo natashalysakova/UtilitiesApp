@@ -1,6 +1,4 @@
 ﻿@using ApexCharts;
-@using Web.Clients
-@using System.Globalization;
 
 @if (Checks is null)
 {
@@ -8,24 +6,24 @@
 }
 
 @{
-    var title = $"Споживання за " + (yearSelected == 0 ? "усі роки" : yearSelected + " рік");
+    var title = $"Споживання за " + (_yearSelected == 0 ? "усі роки" : _yearSelected + " рік");
 }
 
-<MudSelect Variant="Variant.Outlined" T="int" @bind-Value="@yearSelected" SelectedValuesChanged="ReloadCharts">
+<MudSelect Variant="Variant.Outlined" T="int" @bind-Value="@_yearSelected" SelectedValuesChanged="ReloadCharts">
     <MudSelectItem Value="0">Усі роки</MudSelectItem>
-    @foreach (var item in yearsList)
+    @foreach (var item in _yearsList)
     {
         <MudSelectItem Value="@item">@item</MudSelectItem>
     }
 </MudSelect>
 
-<ByYearMetersApex SelectedYear="@yearSelected" Checks="@Checks"></ByYearMetersApex>
+<ByYearMetersApex SelectedYear="@_yearSelected" Checks="@Checks"></ByYearMetersApex>
 <MudExpansionPanels>
     <MudExpansionPanel Text="За обсягом спожитого" >
-        <ByYearVolume SelectedYear="@yearSelected" Checks="@Checks"></ByYearVolume>
+        <ByYearVolume SelectedYear="@_yearSelected" Checks="@Checks"></ByYearVolume>
     </MudExpansionPanel>
     <MudExpansionPanel Text="Не фіксовані платежі" >
-        <ByYearNotFixedApex SelectedYear="@yearSelected" Checks="@Checks"></ByYearNotFixedApex>
+        <ByYearNotFixedApex SelectedYear="@_yearSelected" Checks="@Checks"></ByYearNotFixedApex>
     </MudExpansionPanel>
 </MudExpansionPanels>
 
@@ -33,8 +31,8 @@
     [Parameter, EditorRequired]
     public IEnumerable<CheckViewDto>? Checks { get; set; }
 
-    private int yearSelected = 0;
-    private IEnumerable<int> yearsList = new List<int>();
+    private int _yearSelected = 0;
+    private IEnumerable<int> _yearsList = new List<int>();
 
     private void ReloadCharts()
     {
@@ -45,8 +43,8 @@
     {
         if (Checks != null)
         {
-            yearsList = Checks.Select(x => x.Date.Year).Distinct().Order();
-            yearSelected = 0;
+            _yearsList = Checks.Select(x => x.Date.Year).Distinct().Order();
+            _yearSelected = 0;
         }
     }
 

@@ -1,9 +1,8 @@
-﻿@using Web.Clients
-@using Web.NavigationServices
+﻿@using Web.NavigationServices
 @page "/settings/homes"
 
-@inject ApiClient apiClient
-@inject MenuUpdateService navigationService
+@inject ApiClient ApiClient
+@inject MenuUpdateService NavigationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -12,7 +11,7 @@
         <MudButton @onclick="ShowCreateDialog" Variant="Variant.Filled" Color="Color.Primary">Нова домівка</MudButton>
     </MudItem>
 
-    @if (homes is null)
+    @if (_homes is null)
 {
 for (int i = 0; i < 3; i++)
 {
@@ -33,7 +32,7 @@ for (int i = 0; i < 3; i++)
 else
 {
 
-    @foreach (var home in homes)
+    @foreach (var home in _homes)
 {
     <MudItem xs="12" md="6">
                 <MudCard>
@@ -96,11 +95,11 @@ else
 
 @code {
 
-private ICollection<HomeViewDto>? homes;
+private ICollection<HomeViewDto>? _homes;
 
 protected override async Task OnInitializedAsync()
 {
-homes = await apiClient.Home_GetAllAsync();
+_homes = await ApiClient.Home_GetAllAsync();
 }
 
 private async Task ShowCreateDialog()
@@ -111,7 +110,7 @@ var result = await dialog.Result;
 
 if (result != null && !result.Canceled)
 {
-    await refreshList();
+    await RefreshList();
 }
 }
 
@@ -124,7 +123,7 @@ var result = await dialog.Result;
 
 if (result is not null or { Canceled: true })
 {
-    await refreshList();
+    await RefreshList();
 }
 }
 
@@ -147,9 +146,9 @@ if (result != null && !result.Canceled)
 {
     try
     {
-        await apiClient.Home_DeleteAsync(type.Id);
+        await ApiClient.Home_DeleteAsync(type.Id);
         this.Snackbar.Add($"Home {type.Name} deleted", Severity.Success);
-        await refreshList();
+        await RefreshList();
     }
     catch (ApiException ex)
     {
@@ -176,9 +175,9 @@ if (result is not null or { Canceled: true })
 {
     try
     {
-        await apiClient.Home_PostSetDefaultActionAsync(type.Id);
+        await ApiClient.Home_PostSetDefaultActionAsync(type.Id);
         this.Snackbar.Add($"Home {type.Name} was set as default", Severity.Success);
-        await refreshList();
+        await RefreshList();
     }
     catch (ApiException ex)
     {
@@ -189,9 +188,9 @@ if (result is not null or { Canceled: true })
 }
 }
 
-private async Task refreshList()
+private async Task RefreshList()
 {
-homes = await apiClient.Home_GetAllAsync();
-navigationService.HomesUpdated();
+_homes = await ApiClient.Home_GetAllAsync();
+NavigationService.HomesUpdated();
 }
 }

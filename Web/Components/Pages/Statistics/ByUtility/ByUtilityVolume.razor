@@ -1,6 +1,4 @@
 ﻿@using ApexCharts;
-@using Web.Clients
-@using System.Globalization;
 
 @if (Checks is null || !Checks.Any())
 {
@@ -11,7 +9,7 @@
     var title = $"{SelectedUtility.Name} по місяцях";
 }
 
-<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="chart1" Title="@title" Options="@options">
+<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Title="@title" Options="@_options">
 
     @{
         var years = Checks.Select(x => x.Date.Year).Distinct().Order();
@@ -43,12 +41,12 @@
     [Parameter, EditorRequired]
     public required UtilityGroupViewModel SelectedUtility { get; set; }
 
-    private ApexChart<IGrouping<DateTime, CheckViewDto>>? chart1;
-    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
+    private ApexChart<IGrouping<DateTime, CheckViewDto>>? _chart1;
+    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
 
     protected override void OnInitialized()
     {
-        options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
+        _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
             {
                 Debug = true,
                 Theme = new Theme
@@ -76,6 +74,6 @@
 
     protected override void OnParametersSet()
     {
-        chart1?.RenderAsync();
+        _chart1?.RenderAsync();
     }
 }

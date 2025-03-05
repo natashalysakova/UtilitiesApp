@@ -1,14 +1,13 @@
-﻿@using Web.Clients
-@using Web.NavigationServices
+﻿@using Web.NavigationServices
 
-@inject MenuUpdateService navigationService
-@inject ApiClient client
+@inject MenuUpdateService NavigationService
+@inject ApiClient Client
 
 <MudNavMenu Style="font-size: 1rem;" Color="Color.Primary">
 
-    @if (navItems != null)
+    @if (_navItems != null)
     {
-        @foreach (var link in navItems)
+        @foreach (var link in _navItems)
         {
             var url = "/home/" + link.Id;
             string icon;
@@ -32,21 +31,21 @@
 </MudNavMenu>
 
 @code {
-    IEnumerable<HomeViewDto>? navItems;
+    IEnumerable<HomeViewDto>? _navItems;
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (navItems == null)
-            navItems = await client.Home_GetAllAsync();
+        if (_navItems == null)
+            _navItems = await Client.Home_GetAllAsync();
 
-        navigationService.LinksChanged += UpdateNavMenu;
+        NavigationService.LinksChanged += UpdateNavMenu;
     }
 
     private void UpdateNavMenu(object? sender, EventArgs args)
     {
         this.InvokeAsync(() =>
         {
-            navItems = client.Home_GetAllAsync().Result;
+            _navItems = Client.Home_GetAllAsync().Result;
             StateHasChanged();
         });
     }

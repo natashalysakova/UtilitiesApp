@@ -2,18 +2,20 @@
 @page "/home/{id}/"
 @page "/home/{id}/checks"
 
-@using Web.Clients
 @using Web.Components.Pages.Statistics
 @using Web.Components.Pages.Statistics.ByUtility
 @using Web.Components.Pages.Statistics.ByYear
 @using Web.Extensions
 
-@if (nothingFound)
+@inject ApiClient ApiClient;
+@inject NavigationManager NavigationManager;
+
+@if (_nothingFound)
 {
-    <p>@NoHomes</p>
+    <p>@_noHomes</p>
 }
 
-@if (model == null)
+@if (_model == null)
 {
     <MudText Typo="Typo.h4"><MudSkeleton></MudSkeleton></MudText>
     <MudPaper>
@@ -25,7 +27,7 @@
 else
 {
     string icon;
-    if (model.IsDefault)
+    if (_model.IsDefault)
     {
         icon = @Icons.Material.Filled.Home;
     }
@@ -36,15 +38,15 @@ else
     <MudStack Row="true" Class="pt-4 pb-4">
         <MudIcon Icon="@icon" Style="font-size:2.5rem;" Color="Color.Primary" />
         <MudText Typo="Typo.h4">
-            @model.Name
-            <MudText Inline="true" Typo="Typo.h6">(@model.Area.ToString(".00") М<sup>2</sup>)</MudText>
+            @_model.Name
+            <MudText Inline="true" Typo="Typo.h6">(@_model.Area.ToString(".00") М<sup>2</sup>)</MudText>
         </MudText>
     </MudStack>
 }
 
 <MudGrid Class="mb-6">
     <MudItem sm="12" md="6" xl="4">
-        @if (model == null)
+        @if (_model == null)
         {
             <AnimationPlaceholder />
         }
@@ -54,20 +56,20 @@ else
                 <MudPaper Class="pa-4">
                     @{
                         var address =
-                            $@"{model.City}
-                {model.Street} {model.Building} {model.Apartment}";
+                            $@"{_model.City}
+                {_model.Street} {_model.Building} {_model.Apartment}";
                     }
                     <MudText Typo="Typo.body1">@address</MudText>
-                    <MudText Typo="Typo.body1">@model.Region</MudText>
-                    <MudText Typo="Typo.body1">@model.Country</MudText>
+                    <MudText Typo="Typo.body1">@_model.Region</MudText>
+                    <MudText Typo="Typo.body1">@_model.Country</MudText>
                 </MudPaper>
                 @{
-                    var url = $"home/{model.Id}/tariffs";
+                    var url = $"home/{_model.Id}/tariffs";
                 }
 
-                @if (model.Tariffs.Any())
+                @if (_model.Tariffs.Any())
                 {
-                    var tariffs = model.Tariffs.CurrentlyActive();
+                    var tariffs = _model.Tariffs.CurrentlyActive();
                     <MudText Typo="Typo.h6">Тарифи на сьогодні</MudText>
                     <CompactTariffTable Model="tariffs" ShowDateColumn="false"></CompactTariffTable>
                     <MudButton Href="@url" Variant="Variant.Filled">Тарифи</MudButton>
@@ -88,24 +90,24 @@ else
     </MudItem>
     <MudItem sm="12" md="6" xl="4">
 
-        @if (model == null)
+        @if (_model == null)
         {
             <AnimationPlaceholder />
         }
         else
         {
             <MudStack Spacing="4">
-                @if (model.Tariffs.Any())
+                @if (_model.Tariffs.Any())
                 {
-                    var url = $"/home/{model.Id}/checks/add";
+                    var url = $"/home/{_model.Id}/checks/add";
                     <MudButton FullWidth=true Href="@url"
                                Variant="Variant.Filled" Color="Color.Primary">Створити чек</MudButton>
                 }
 
-                @if (model.Checks.Any())
+                @if (_model.Checks.Any())
                 {
                     var options = new[] { 12, 24, 36, 48, 60, 72, int.MaxValue };
-                    <MudTable Items="@model.Checks.OrderByDescending(x=>x.Date)" Hover="true" FixedHeader="true" Breakpoint="Breakpoint.None" Dense="true" RowClass="cursor-pointer" Class="pa-3" T="CheckViewDto"
+                    <MudTable Items="@_model.Checks.OrderByDescending(x=>x.Date)" Hover="true" FixedHeader="true" Breakpoint="Breakpoint.None" Dense="true" RowClass="cursor-pointer" Class="pa-3" T="CheckViewDto"
                               Filter="new Func<CheckViewDto,bool>(FilterFunc)" Height="510px" OnRowClick="RowClickEvent">
                         <HeaderContent>
                             <MudTh></MudTh>
@@ -115,7 +117,7 @@ else
                         </HeaderContent>
                         <RowTemplate>
                             @{
-                                var viewUrl = $"/home/{model.Id}/checks/{context.Id}";
+                                var viewUrl = $"/home/{_model.Id}/checks/{context.Id}";
                             }
                             <MudTh><MudIconButton Size="Size.Small" Href="@viewUrl" Icon="fa-solid fa-eye"></MudIconButton></MudTh>
                             <MudTd DataLabel="Дата">@context.Date.ToString("d")</MudTd>
@@ -135,19 +137,19 @@ else
 
 
     </MudItem>
-    @if (model != null && model.Checks.Any())
+    @if (_model != null && _model.Checks.Any())
     {
         <MudItem xs="12">
             <MudText Typo="Typo.h6">Статистика</MudText>
         </MudItem>
         <MudItem xs="12" md="6">
             <MudPaper>
-                <ByYear Checks="@model?.Checks"></ByYear>
+                <ByYear Checks="@_model?.Checks"></ByYear>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" md="6">
             <MudPaper>
-                <ByUtility Checks="@model?.Checks"></ByUtility>
+                <ByUtility Checks="@_model?.Checks"></ByUtility>
             </MudPaper>
         </MudItem>
 
@@ -156,15 +158,13 @@ else
 
 
 @code {
-    HomeViewDto model = default!;
-    @inject ApiClient apiClient;
-    @inject NavigationManager navigationManager;
+    HomeViewDto _model = default!;
 
     [Parameter]
-    public string? id { get; set; }
+    public string? Id { get; set; }
 
-    private string? NoHomes = "No homes found. Please check Settings";
-    bool nothingFound = false;
+    private string? _noHomes = "No homes found. Please check Settings";
+    bool _nothingFound = false;
 
     private bool FilterFunc(CheckViewDto check)
     {
@@ -175,21 +175,21 @@ else
     {
         try
         {
-            if (id == null)
+            if (Id == null)
             {
-                model = apiClient.Home_GetDefaultAsync().Result;
+                _model = ApiClient.Home_GetDefaultAsync().Result;
             }
             else
             {
-                model = apiClient.Home_GetAsync(Guid.Parse(id)).Result;
+                _model = ApiClient.Home_GetAsync(Guid.Parse(Id)).Result;
             }
-            nothingFound = false;
+            _nothingFound = false;
         }
         catch (ApiException ex)
         {
             if (ex.StatusCode == 404)
             {
-                nothingFound = true;
+                _nothingFound = true;
             }
         }
     }
@@ -198,7 +198,7 @@ else
     {
         if (element.Item is not null)
         {
-            navigationManager.NavigateTo($"/home/{model.Id}/checks/{element.Item.Id}");
+            NavigationManager.NavigateTo($"/home/{_model.Id}/checks/{element.Item.Id}");
         }
     }
 }

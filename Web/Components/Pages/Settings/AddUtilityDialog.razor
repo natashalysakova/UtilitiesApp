@@ -1,8 +1,8 @@
-﻿@using Web.Clients
+﻿@inject ApiClient ApiClient
 
-@if (model != null)
+@if (_model != null)
 {
-    <EditForm Model="@model" OnValidSubmit="Submit">
+    <EditForm Model="@_model" OnValidSubmit="Submit">
 
         <MudDialog Style="height:auto;">
             <TitleContent>
@@ -18,7 +18,7 @@
             <DialogContent>
                 <DataAnnotationsValidator />
                 <MudStack>
-                    <MudTextField @bind-Value="@model.Name" For="@(()=> model.Name)" Label="Назва"></MudTextField>
+                    <MudTextField @bind-Value="@_model.Name" For="@(()=> _model.Name)" Label="Назва"></MudTextField>
                 </MudStack>
             </DialogContent>
             <DialogActions>
@@ -39,7 +39,7 @@
 }
 
 @code {
-    @inject ApiClient apiClient;
+
 
     [CascadingParameter]
     public required IMudDialogInstance MudDialog { get; set; }
@@ -50,20 +50,20 @@
     private bool IsEditMode { get; set; }
 
 
-    private UtilityGroupEditModel? model;
-    private string? errorMessage = null;
+    private UtilityGroupEditModel? _model;
+    private string? _errorMessage = null;
 
     private async Task Submit()
     {
-        errorMessage = null;
+        _errorMessage = null;
         try
         {
-            var result = await apiClient.Utilities_PutAsync(model!.Id, model);
-            MudDialog.Close(DialogResult.Ok(model));
+            var result = await ApiClient.Utilities_PutAsync(_model!.Id, _model);
+            MudDialog.Close(DialogResult.Ok(_model));
         }
         catch (ApiException ex)
         {
-            errorMessage = ex.Message;
+            _errorMessage = ex.Message;
         }
     }
 
@@ -73,18 +73,18 @@
     {
         if (UtilityId == null)
         {
-            model = new UtilityGroupEditModel();
+            _model = new UtilityGroupEditModel();
         }
         else
         {
             IsEditMode = true;
             try
             {
-                model = await apiClient.Utilities_GetForEditAsync(UtilityId.Value);
+                _model = await ApiClient.Utilities_GetForEditAsync(UtilityId.Value);
             }
             catch (ApiException ex)
             {
-                errorMessage = ex.Message;
+                _errorMessage = ex.Message;
             }
         }
     }

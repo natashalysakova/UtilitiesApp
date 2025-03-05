@@ -1,33 +1,31 @@
 ﻿@using ApexCharts;
-@using Web.Clients
-@using System.Globalization;
 
 @if (Checks is null)
 {
     return;
 }
 
-@if (utilityList is not null)
+@if (_utilityList is not null)
 {
-    <MudSelect Variant="Variant.Outlined" T="UtilityGroupViewModel" @bind-Value="@utilitySelected" SelectedValuesChanged="ReloadChart">
-        @foreach (var item in utilityList)
+    <MudSelect Variant="Variant.Outlined" T="UtilityGroupViewModel" @bind-Value="@_utilitySelected" SelectedValuesChanged="ReloadChart">
+        @foreach (var item in _utilityList)
         {
             <MudSelectItem Value="@item.Key">@item.Key.Name</MudSelectItem>
         }
     </MudSelect>
 
-    if (utilitySelected is not null)
+    if (_utilitySelected is not null)
     {
-        @switch (utilityList[utilitySelected])
+        @switch (_utilityList[_utilitySelected])
         {
             case TariffType.Meters:
-                <ByUtilityMeters Checks="@Checks" SelectedUtility="@utilitySelected"></ByUtilityMeters>
+                <ByUtilityMeters Checks="@Checks" SelectedUtility="@_utilitySelected"></ByUtilityMeters>
                 break;
             case TariffType.Volume:
-                <ByUtilityVolume Checks="@Checks" SelectedUtility="@utilitySelected"></ByUtilityVolume>
+                <ByUtilityVolume Checks="@Checks" SelectedUtility="@_utilitySelected"></ByUtilityVolume>
                 break;
             case TariffType.NotFixedPayment:
-                <ByUtilityNotFixed Checks="@Checks" SelectedUtility="@utilitySelected"></ByUtilityNotFixed>
+                <ByUtilityNotFixed Checks="@Checks" SelectedUtility="@_utilitySelected"></ByUtilityNotFixed>
                 break;
         }
     }
@@ -44,8 +42,8 @@
     [Parameter, EditorRequired]
     public IEnumerable<CheckViewDto>? Checks { get; set; }
 
-    private UtilityGroupViewModel? utilitySelected;
-    private Dictionary<UtilityGroupViewModel, TariffType> utilityList = new Dictionary<UtilityGroupViewModel, TariffType>();
+    private UtilityGroupViewModel? _utilitySelected;
+    private Dictionary<UtilityGroupViewModel, TariffType> _utilityList = new Dictionary<UtilityGroupViewModel, TariffType>();
 
     private void ReloadChart()
     {
@@ -60,15 +58,15 @@
     {
         if (Checks != null)
         {
-            utilityList = Checks
+            _utilityList = Checks
                 .SelectMany(x => x.Records)
                 .Where(x => x.Tariff.TariffType is TariffType.Meters or TariffType.Volume or TariffType.NotFixedPayment)
                 .DistinctBy(x => x.Tariff.UtilityGroupId)
                 .ToDictionary(x => new UtilityGroupViewModel() { Id = x.Tariff.UtilityGroupId, Name = x.Tariff.UtilityGroupName }, x => x.Tariff.TariffType);
 
-            if (utilityList.Any())
+            if (_utilityList.Any())
             {
-                utilitySelected = utilityList.First().Key;
+                _utilitySelected = _utilityList.First().Key;
             }
         }
     }

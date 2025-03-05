@@ -1,6 +1,6 @@
-﻿@using Web.Clients
+﻿@inject ApiClient ApiClient
 
-@if (model != null)
+@if (_model != null)
 {
     <MudDialog Style="height:auto;">
         <DialogContent>
@@ -8,11 +8,11 @@
                 <MudText>Ви дійсно хочете деактивувати тариф?</MudText>
                 <MudText>Щоб підтвердити дію, введіть останній день дії тарифу та підтвердіть деактивацію</MudText>
 
-                <MudDatePicker @bind-Date="@model.EndDate" For="@(()=> model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="Дата кінця" />
-                <MudCheckBox @bind-Value="@createNew">Додати новий тариф на основі того, що деактивується?</MudCheckBox>
-                @if (errorMessage != null)
+                <MudDatePicker @bind-Date="@_model.EndDate" For="@(()=> _model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="Дата кінця" />
+                <MudCheckBox @bind-Value="@_createNew">Додати новий тариф на основі того, що деактивується?</MudCheckBox>
+                @if (_errorMessage != null)
                 {
-                    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+                    <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
                 }
             </MudStack>
         </DialogContent>
@@ -24,45 +24,43 @@
 }
 
 @code {
-    @inject ApiClient apiClient;
-
     [CascadingParameter]
     public required IMudDialogInstance MudDialog { get; set; }
 
     [Parameter]
     public Guid? TariffId { get; set; }
 
-    private TariffEditDto? model;
-    private string? errorMessage = null;
-    bool createNew = true;
+    private TariffEditDto? _model;
+    private string? _errorMessage = null;
+    bool _createNew = true;
 
     private async Task Submit()
     {
-        errorMessage = null;
+        _errorMessage = null;
         try
         {
-            var result = await apiClient.Tariffs_PutAsync(model!.Id, model);
-            MudDialog.Close(DialogResult.Ok<bool>(createNew));
+            var result = await ApiClient.Tariffs_PutAsync(_model!.Id, _model);
+            MudDialog.Close(DialogResult.Ok<bool>(_createNew));
         }
         catch (ApiException ex)
         {
-            errorMessage = ex.Message;
+            _errorMessage = ex.Message;
         }
     }
 
     private void Cancel() => MudDialog.Cancel();
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         if (TariffId != null)
         {
             try
             {
-                model = await apiClient.Tariffs_GetForEditAsync(TariffId.Value);
+                _model = await ApiClient.Tariffs_GetForEditAsync(TariffId.Value);
             }
             catch (ApiException ex)
             {
-                errorMessage = ex.Message;
+                _errorMessage = ex.Message;
             }
         }
     }

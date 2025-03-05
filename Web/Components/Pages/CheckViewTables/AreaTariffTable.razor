@@ -1,10 +1,11 @@
-﻿@using Web.Clients
-@using Web.NavigationServices
+﻿@using Web.NavigationServices
 
-@if (filtered != null && filtered.Any())
+@inject CheckCalculateService Service
+
+@if (_filtered != null && _filtered.Any())
 {
     <MudText Typo="Typo.h6">За площею</MudText>
-    <MudDataGrid Items="@filtered" Bordered="true" Dense="true"
+    <MudDataGrid Items="@_filtered" Bordered="true" Dense="true"
                   SortMode="SortMode.None" >
         <Columns>
             <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="Послуга" Editable="false" />
@@ -16,22 +17,20 @@
 }
 
 @code {
-    @inject CheckCalculateService service;
-
     [Parameter, EditorRequired]
     public required ICollection<RecordEditDto> Model { get; set; }
 
-    private IEnumerable<RecordEditDto>? filtered;
+    private IEnumerable<RecordEditDto>? _filtered;
 
     protected override void OnInitialized()
     {
         DoFiltering();
-        service.OnModelUpdated += DoFiltering;
+        Service.OnModelUpdated += DoFiltering;
     }
 
     void DoFiltering()
     {
-        filtered = Model.Where(x => x.Tariff.TariffType == TariffType.HouseHoldArea);
+        _filtered = Model.Where(x => x.Tariff.TariffType == TariffType.HouseHoldArea);
         StateHasChanged();
     }
 }

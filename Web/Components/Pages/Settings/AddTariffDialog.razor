@@ -1,5 +1,5 @@
-﻿@using System.Globalization
-@using Web.Clients
+﻿@inject ApiClient ApiClient
+@inject ISnackbar Snackbar
 
 @if (Model is not null)
 {
@@ -19,25 +19,25 @@
             <DialogContent>
                 <DataAnnotationsValidator />
                 <MudStack>
-                    @if (utilityTypes != null)
+                    @if (_utilityTypes != null)
                     {
-                        <MudSelect T="Guid" @bind-Value="@Model.UtilityGroupId" Placeholder="Оберіть послугу" ToStringFunc="@ConvertToString">
-                            @foreach (var item in utilityTypes)
+                        <MudSelect T="Guid" @bind-Value="@Model.UtilityGroupId" Placeholder="Оберіть послугу" ToStringFunc="@_convertToString">
+                            @foreach (var item in _utilityTypes)
                             {
                                 <MudSelectItem Value="@item.Id" />
                             }
                         </MudSelect>
                     }
-                    @if (loadingError)
+                    @if (_loadingError)
                     {
                         <MudText>В системі не знайдено будинку за замовчанням. Створіть або оберіть його в налаштуваннях і спробуйте знову.</MudText>
                         <MudButton Href="/settings/homes" Variant="Variant.Filled" Color="Color.Primary">Перейти до налаштувань</MudButton>
                     }
-                    else if (households is not null)
+                    else if (_households is not null)
                     {
 
                         <MudSelect @bind-Value="@Model.HomeId" Label="Домівка">
-                            @foreach (var house in households)
+                            @foreach (var house in _households)
                             {
                                 <MudSelectItem Value="house.Id">@house.Name</MudSelectItem>
                             }
@@ -90,7 +90,7 @@
                     @if (Model.TariffType != TariffType.NotFixedPayment)
                     {
                         <MudNumericField @bind-Value="@Model.Cost"
-                                         For="@(()=> Model.Cost)" Culture="@culture"
+                                         For="@(()=> Model.Cost)" Culture="@_culture"
                                          Format="0.00##" Label="Ціна" HideSpinButtons="true"
                                          AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
                                          Adornment="Adornment.Start" AdornmentColor="Color.Primary" />
@@ -172,15 +172,15 @@
                         }
                     }
 
-                    @if (displayAlert)
+                    @if (_displayAlert)
                     {
                         <MudPaper Class="pa-4">
                             <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
                             <MudText Color="@Color.Error">
                                 <ValidationSummary />
-                                @if (validationResult is not null)
+                                @if (_validationResult is not null)
                                 {
-                                    @foreach (var item in validationResult.ValidationErrors)
+                                    @foreach (var item in _validationResult.ValidationErrors)
                                     {
                                         foreach (var field in item.Value)
                                         {
@@ -190,7 +190,7 @@
                                 }
                                 else
                                 {
-                                    @errorMessage
+                                    @_errorMessage
                                 }
 
                             </MudText>
@@ -217,8 +217,7 @@
 }
 @code
 {
-    @inject ApiClient apiClient ;
-    @inject ISnackbar Snackbar
+
 
 
     [CascadingParameter]
@@ -238,22 +237,22 @@
 
     private bool IsEditMode { get; set; }
 
-    private static ICollection<UtilityGroupViewModel>? utilityTypes;
-    private ICollection<HomeViewDto>? households;
+    private static ICollection<UtilityGroupViewModel>? _utilityTypes;
+    private ICollection<HomeViewDto>? _households;
 
-    private CultureInfo culture = CultureInfo.CurrentCulture;
+    private CultureInfo _culture = CultureInfo.CurrentCulture;
 
-    bool displayAlert = false;
-    string errorMessage = string.Empty;
-    ValidationResult? validationResult = default!;
+    bool _displayAlert = false;
+    string _errorMessage = string.Empty;
+    ValidationResult? _validationResult = default!;
 
-    bool loadingError = false;
+    bool _loadingError = false;
 
     protected override async void OnInitialized()
     {
-        var task = apiClient.Home_GetAllAsync();
+        var task = ApiClient.Home_GetAllAsync();
         task.Wait();
-        households = task.Result;
+        _households = task.Result;
 
         if (Reference != null)
         {
@@ -300,10 +299,10 @@
             }
             else
             {
-                var defaultHouse = households.SingleOrDefault(x => x.IsDefault);
+                var defaultHouse = _households.SingleOrDefault(x => x.IsDefault);
                 if (defaultHouse is null)
                 {
-                    loadingError = true;
+                    _loadingError = true;
                 }
                 else
                 {
@@ -314,11 +313,11 @@
         else if (TariffId != null)
         {
             IsEditMode = true;
-            Model = await apiClient.Tariffs_GetForEditAsync(TariffId.Value);
+            Model = await ApiClient.Tariffs_GetForEditAsync(TariffId.Value);
             StateHasChanged();
         }
 
-        utilityTypes = await apiClient.Utilities_GetAllAsync();
+        _utilityTypes = await ApiClient.Utilities_GetAllAsync();
     }
 
     private void Submit() => MudDialog.Close(DialogResult.Ok(true));
@@ -329,7 +328,7 @@
     {
         try
         {
-            var result = await apiClient.Tariffs_PutAsync(Model!.Id, Model);
+            var result = await ApiClient.Tariffs_PutAsync(Model!.Id, Model);
 
             if (IsEditMode)
             {
@@ -344,13 +343,13 @@
         }
         catch (ApiException<ValidationResult> ex)
         {
-            displayAlert = true;
-            validationResult = ex.Result;
+            _displayAlert = true;
+            _validationResult = ex.Result;
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
-            displayAlert = true;
+            _errorMessage = ex.Message;
+            _displayAlert = true;
         }
     }
 
@@ -368,19 +367,19 @@
 
     private async Task<IEnumerable<Guid>> NameAutoComplete(string value, CancellationToken token)
     {
-        if (utilityTypes is null)
+        if (_utilityTypes is null)
         {
-            utilityTypes = await apiClient.Utilities_GetAllAsync();
+            _utilityTypes = await ApiClient.Utilities_GetAllAsync();
         }
 
         if (string.IsNullOrEmpty(value))
-            return utilityTypes.Select(x => x.Id);
+            return _utilityTypes.Select(x => x.Id);
 
-        return utilityTypes.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
+        return _utilityTypes.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
     }
 
-    Func<Guid, string> ConvertToString = new Func<Guid, string>((id) =>
+    Func<Guid, string> _convertToString = new Func<Guid, string>((id) =>
     {
-        return utilityTypes?.SingleOrDefault(x => x.Id == id)?.Name ?? "ОБЕРІТЬ ПОСЛУГУ";
+        return _utilityTypes?.SingleOrDefault(x => x.Id == id)?.Name ?? "ОБЕРІТЬ ПОСЛУГУ";
     });
 }

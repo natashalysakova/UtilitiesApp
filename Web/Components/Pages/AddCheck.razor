@@ -1,22 +1,27 @@
 ﻿@page "/home/{HouseId}/checks/add"
 @page "/home/{HouseId}/checks/{CheckId}/edit"
 
-@using Web.Clients
 @using Web.Components.Pages.CheckViewTables
 @using Web.Extensions
 @using Web.NavigationServices
 @using System.Collections.Generic;
+@using System.Reflection.Metadata
+
+@inject ApiClient ApiClient;
+@inject CheckCalculateService Service;
+@inject NavigationManager NavigationManager;
+@inject ILogger<AddCheck> Logger;
 
 <MudGrid Class="pt-4">
-    @if (displayAlert)
+    @if (_displayAlert)
     {
         <MudItem xs="12">
             <MudPaper Class="pa-4">
                 <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
                 <MudText Color="@Color.Error">
-                    @if (validationResult is not null)
+                    @if (_validationResult is not null)
                     {
-                        @foreach (var item in validationResult.ValidationErrors)
+                        @foreach (var item in _validationResult.ValidationErrors)
                         {
                             foreach (var field in item.Value)
                             {
@@ -26,7 +31,7 @@
                     }
                     else
                     {
-                        @errorMessage
+                        @_errorMessage
                     }
 
                 </MudText>
@@ -40,7 +45,7 @@
                 <MudText Typo="Typo.h4">Рахунок за @Model.Date!.Value.ToShortDateString()</MudText>
                 <MudGrid Justify="Justify.SpaceBetween">
                     <MudItem xs="4">
-                        <MudDatePicker @bind-Date="Model.Date" Label="Дата оплати" MinDate="@MinAvailableDate" Editable="true" PickerClosed="ReFill"></MudDatePicker>
+                        <MudDatePicker @bind-Date="Model.Date" Label="Дата оплати" MinDate="@_minAvailableDate" Editable="true" PickerClosed="ReFill"></MudDatePicker>
                     </MudItem>
                 </MudGrid>
                 <MudGrid>
@@ -133,11 +138,6 @@
 </MudGrid>
 
 @code {
-    @inject ApiClient apiClient
-    @inject CheckCalculateService service;
-    @inject NavigationManager navigationManager;
-    @inject ILogger<AddCheck> logger;
-
     [Parameter]
     public required string HouseId { get; set; }
 
@@ -147,16 +147,16 @@
     public CheckEditDto? Model { get; set; }
 
     public ICollection<TariffCalulateDto>? Tariffs { get; set; }
-    private DateTime MinAvailableDate = DateTime.MinValue;
+    private DateTime _minAvailableDate = DateTime.MinValue;
 
     protected override void OnInitialized()
     {
-        logger.LogInformation("OnInitialized");
+        Logger.LogInformation("OnInitialized");
         
-        service.OnRefreshRequested += FillAndCalculate;
+        Service.OnRefreshRequested += FillAndCalculate;
     }
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         if (!Guid.TryParse(HouseId, out var houseGuid))
         {
@@ -167,12 +167,12 @@
         {
             try
             {
-                Model = await apiClient.Check_PostCreateEmptyActionAsync(houseGuid, DateTime.Now);
+                Model = await ApiClient.Check_PostCreateEmptyActionAsync(houseGuid, DateTime.Now);
             }
             catch (Exception ex)
             {
-                displayAlert = true;
-                errorMessage = ex.Message;
+                _displayAlert = true;
+                _errorMessage = ex.Message;
             }
         }
         else
@@ -180,46 +180,46 @@
             try
             {
                 var checkId = Guid.Parse(CheckId);
-                Model = await apiClient.Check_GetForEditAsync(checkId);
-                displayAlert = false;
+                Model = await ApiClient.Check_GetForEditAsync(checkId);
+                _displayAlert = false;
             }
             catch (ApiException<ValidationResult> ex)
             {
-                displayAlert = true;
-                validationResult = ex.Result;
+                _displayAlert = true;
+                _validationResult = ex.Result;
             }
             catch (Exception ex)
             {
-                displayAlert = true;
-                errorMessage = ex.Message;
+                _displayAlert = true;
+                _errorMessage = ex.Message;
             }
         }
 
         ReloadSupportingData();
     }
 
-    private bool displayAlert = false;
-    private string? errorMessage;
-    private ValidationResult? validationResult;
+    private bool _displayAlert = false;
+    private string? _errorMessage;
+    private ValidationResult? _validationResult;
 
     private async Task SubmitCheck()
     {
-        logger.LogInformation("SubmitCheck");
+        Logger.LogInformation("SubmitCheck");
 
         try
         {
-            var result = await apiClient.Check_PutAsync(Model!.Id, Model);
-            navigationManager.NavigateTo($"/home/{HouseId}");
+            var result = await ApiClient.Check_PutAsync(Model!.Id, Model);
+            NavigationManager.NavigateTo($"/home/{HouseId}");
         }
         catch (ApiException<ValidationResult> ex)
         {
-            displayAlert = true;
-            validationResult = ex.Result;
+            _displayAlert = true;
+            _validationResult = ex.Result;
         }
         catch (Exception ex)
         {
-            displayAlert = true;
-            errorMessage = ex.Message;
+            _displayAlert = true;
+            _errorMessage = ex.Message;
         }
     }
 
@@ -229,56 +229,56 @@
         if (Model == null)
             return;
 
-        logger.LogInformation("FillAndCalculate");
+        Logger.LogInformation("FillAndCalculate");
         try
         {
-            logger.LogInformation(string.Join(",", Model.Records.Select(x => x.Measure.ToString())));
+            Logger.LogInformation(string.Join(",", Model.Records.Select(x => x.Measure.ToString())));
 
-            Model.Amount = await apiClient.Check_PostCalculateActionAsync(Model);
+            Model.Amount = await ApiClient.Check_PostCalculateActionAsync(Model);
             StateHasChanged();
         }
         catch (ApiException<ValidationResult> ex)
         {
-            displayAlert = true;
-            validationResult = ex.Result;
+            _displayAlert = true;
+            _validationResult = ex.Result;
         }
         catch (Exception ex)
         {
-            displayAlert = true;
-            errorMessage = ex.Message;
+            _displayAlert = true;
+            _errorMessage = ex.Message;
         }
 
     }
 
     private void ReFill()
     {
-        logger.LogInformation("ReFill");
+        Logger.LogInformation("ReFill");
 
         if (Model == null)
             return;
 
         try
         {
-            Model = apiClient.Check_PostRefillActionAsync(Model).Result;
+            Model = ApiClient.Check_PostRefillActionAsync(Model).Result;
             ReloadSupportingData();
             StateHasChanged();
-            service.ModelUpdated();
+            Service.ModelUpdated();
         }
         catch (ApiException<ValidationResult> ex)
         {
-            displayAlert = true;
-            validationResult = ex.Result;
+            _displayAlert = true;
+            _validationResult = ex.Result;
         }
         catch (Exception ex)
         {
-            displayAlert = true;
-            errorMessage = ex.Message;
+            _displayAlert = true;
+            _errorMessage = ex.Message;
         }
     }
 
     private void ReloadSupportingData()
     {
-        logger.LogInformation("ReloadSupportingData");
+        Logger.LogInformation("ReloadSupportingData");
 
         if (Model == null)
             return;
@@ -287,12 +287,12 @@
 
         try
         {
-            var previousCheck = apiClient.Check_GetPreviousAsync(Model.HomeId, Model.Date).Result;
-            MinAvailableDate = previousCheck.Date.AddDays(1);
+            var previousCheck = ApiClient.Check_GetPreviousAsync(Model.HomeId, Model.Date).Result;
+            _minAvailableDate = previousCheck.Date.AddDays(1);
         }
         catch
         {
-            MinAvailableDate = new DateTime(1970, 1, 1);
+            _minAvailableDate = new DateTime(1970, 1, 1);
         }
     }
 }

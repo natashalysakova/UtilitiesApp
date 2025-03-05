@@ -1,21 +1,21 @@
-﻿@using System.Globalization
-@using Web.Clients
-@using Web.NavigationServices
+﻿@using Web.NavigationServices
 
-@if (filtered is not null && filtered.Any())
+@inject CheckCalculateService Service
+
+@if (_filtered is not null && _filtered.Any())
 {
     <MudText Typo="Typo.h6">Не фіксовані платежі</MudText>
-    <MudDataGrid Items="@filtered" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
+    <MudDataGrid Items="@_filtered" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
                   SortMode="SortMode.None" >
         <Columns>
             <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="Послуга" Editable="false" />
             <PropertyColumn Property="x=>x.Cost" Format="C" Title="Сума" Editable="true" CellClass="visible-input" HeaderClass="visible-input">
                 <EditTemplate>
                     <MudNumericField @bind-Value="context.Item.Cost"
-                                     Culture="@culture" Format="N2"
+                                     Culture="@_culture" Format="N2"
                                      HideSpinButtons="true"
                                      Adornment="Adornment.End"
-                                     AdornmentText="@($"{culture.NumberFormat.CurrencySymbol}/місяць")"
+                                     AdornmentText="@($"{_culture.NumberFormat.CurrencySymbol}/місяць")"
                                      TextChanged="@(()=>{ CommittedItemChanges(context.Item);})"></MudNumericField>
                 </EditTemplate>
             </PropertyColumn>
@@ -24,27 +24,27 @@
 }
 
 @code {
-    @inject CheckCalculateService service;
-    private CultureInfo culture = CultureInfo.CurrentCulture;
+
+    private CultureInfo _culture = CultureInfo.CurrentCulture;
 
     [Parameter, EditorRequired]
     public required ICollection<RecordEditDto> Model { get; set; }
-    private IEnumerable<RecordEditDto>? filtered;
+    private IEnumerable<RecordEditDto>? _filtered;
 
     protected override void OnInitialized()
     {
         DoFiltering();
-        service.OnModelUpdated += DoFiltering;
+        Service.OnModelUpdated += DoFiltering;
     }
 
     void DoFiltering()
     {
-        filtered = Model.Where(x => x.Tariff.TariffType == TariffType.NotFixedPayment);
+        _filtered = Model.Where(x => x.Tariff.TariffType == TariffType.NotFixedPayment);
         StateHasChanged();
     }
 
     void CommittedItemChanges(RecordEditDto item)
     {
-        service.RequestRefresh();
+        Service.RequestRefresh();
     }
 }

@@ -161,7 +161,7 @@ public class CheckController(UtilitiesDbContext dbContext, CheckCalculationServi
         dbContext.Entry(existing).CurrentValues.SetValues(entity);
         foreach (var item in existing.Records)
         {
-            dbContext.Entry(item).CurrentValues.SetValues(entity.Records.Where(x => x.Id == item.Id).First());
+            dbContext.Entry(item).CurrentValues.SetValues(entity.Records.First(x => x.Id == item.Id));
         }
 
         await dbContext.SaveChangesAsync();

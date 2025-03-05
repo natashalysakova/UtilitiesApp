@@ -1,14 +1,13 @@
 ﻿@page "/home/{HomeId}/stats/{UtilityId}"
 
-@using System.Globalization
-
 @using ApexCharts
-@using Web.Clients
+
+@inject ApiClient ApiClient;
 
 @if (Model != null && SelectedUtility != null)
 {
 
-    <ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="chart1" Options="@options">
+    <ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Options="@_options">
 
         @{
             var years = Model.Select(x => x.Date.Year).Distinct().Order();
@@ -32,8 +31,6 @@
 
 
 @code {
-    @inject ApiClient apiClient;
-
     [Parameter]
     public string HomeId { get; set; }
 
@@ -44,12 +41,12 @@
     public Guid? SelectedUtility { get; set; }
 
 
-    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> options = new();
-    private ApexChart<IGrouping<DateTime, CheckViewDto>> chart1 = new();
+    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> _options = new();
+    private ApexChart<IGrouping<DateTime, CheckViewDto>> _chart1 = new();
 
     protected override void OnInitialized()
     {
-        options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
+        _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
             {
                 Debug = true,
                 Theme = new Theme
@@ -79,7 +76,7 @@
     {
         if (HomeId != null)
         {
-            Model = apiClient.Home_GetAsync(Guid.Parse(HomeId)).Result.Checks;
+            Model = ApiClient.Home_GetAsync(Guid.Parse(HomeId)).Result.Checks;
         }
 
         if (UtilityId != null)
@@ -89,7 +86,7 @@
 
         if (Model != null && SelectedUtility != null)
         {
-            chart1.RenderAsync();
+            _chart1.RenderAsync();
         }
     }
 }

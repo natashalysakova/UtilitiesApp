@@ -1,5 +1,5 @@
-﻿@using System.Globalization
-@using Web.Clients
+﻿@inject ApiClient ApiClient
+@inject ISnackbar Snackbar
 
 @if(Model != null)
 {
@@ -22,7 +22,7 @@
             <MudStack>
 
                 <MudTextField @bind-Value="@Model.Name" For="@(()=> Model.Name)" Label="Назва домівки"></MudTextField>
-                <MudNumericField @bind-Value="@Model.Area" Culture="@culture" Format="N2" Label="Площа" HideSpinButtons="true" Adornment="Adornment.End" AdornmentText="кв.м"></MudNumericField>
+                <MudNumericField @bind-Value="@Model.Area" Culture="@_culture" Format="N2" Label="Площа" HideSpinButtons="true" Adornment="Adornment.End" AdornmentText="кв.м"></MudNumericField>
                 <MudTextField @bind-Value="@Model.Country" For="@(()=> Model.Country)" Label="Країна"></MudTextField>
                 <MudTextField @bind-Value="@Model.Region" For="@(()=> Model.Region)" Label="Область"></MudTextField>
                 <MudTextField @bind-Value="@Model.City" For="@(()=> Model.City)" Label="Місто"></MudTextField>
@@ -32,13 +32,13 @@
                 <MudCheckBox @bind-Value="@Model.IsDefault" Label="Домівка за замовчанням"></MudCheckBox>
             </MudStack>
 
-            @if (displayAlert)
+            @if (_displayAlert)
             {
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
                     <MudText Color="@Color.Error">
                         <ValidationSummary />
-                        @foreach (var item in validationResult.ValidationErrors)
+                        @foreach (var item in _validationResult.ValidationErrors)
                         {
                             foreach (var field in item.Value)
                             {
@@ -70,8 +70,7 @@ else {
 }
 
 @code {
-    @inject ApiClient apiClient
-    @inject ISnackbar Snackbar
+
 
     [CascadingParameter]
     public required IMudDialogInstance MudDialog { get; set; }
@@ -81,10 +80,10 @@ else {
 
     private HomeEditDto? Model { get; set; }
 
-    CultureInfo culture = CultureInfo.CurrentCulture;
+    CultureInfo _culture = CultureInfo.CurrentCulture;
     private bool IsEditMode { get; set; }
-    bool displayAlert = false;
-    ValidationResult validationResult = default!;
+    bool _displayAlert = false;
+    ValidationResult _validationResult = default!;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -95,7 +94,7 @@ else {
         else
         {
             IsEditMode = true;
-            Model = await apiClient.Home_GetForEditAsync(HomeId.Value);
+            Model = await ApiClient.Home_GetForEditAsync(HomeId.Value);
         }
     }
 
@@ -107,7 +106,7 @@ else {
     {
         try
         {
-            var result = await apiClient.Home_PutAsync(Model!.Id, Model);
+            var result = await ApiClient.Home_PutAsync(Model!.Id, Model);
 
             if (IsEditMode)
             {
@@ -122,12 +121,12 @@ else {
         }
         catch (ApiException<ValidationResult> ex)
         {
-            displayAlert = true;
-            validationResult = ex.Result;
+            _displayAlert = true;
+            _validationResult = ex.Result;
         }
         catch
         {
-            displayAlert = true;
+            _displayAlert = true;
         }
     }
 }

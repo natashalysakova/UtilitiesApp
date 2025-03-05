@@ -1,6 +1,4 @@
 ﻿@using ApexCharts;
-@using Web.Clients
-@using System.Globalization;
 
 @if (Checks is null || !Checks.Any())
 {
@@ -11,7 +9,7 @@
     var title = $"Споживання за обсягом спожитого за " + (SelectedYear == 0 ? "усі роки" : SelectedYear + " рік");
 }
 
-<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="chart1" Title="@title" Options="@options">
+<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Title="@title" Options="@_options">
 
     @{
         var utilities = Checks
@@ -63,18 +61,18 @@
     [Parameter, EditorRequired]
     public int SelectedYear { get; set; }
 
-    private ApexChart<IGrouping<DateTime, CheckViewDto>>? chart1;
-    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
+    private ApexChart<IGrouping<DateTime, CheckViewDto>>? _chart1;
+    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
 
 
     protected override void OnParametersSet()
     {
-        chart1?.RenderAsync();
+        _chart1?.RenderAsync();
     }
 
     protected override void OnInitialized()
     {
-        options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
+        _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
             {
                 Debug = true,
                 Theme = new Theme
