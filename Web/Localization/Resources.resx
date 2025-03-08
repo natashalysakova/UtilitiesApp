@@ -1,0 +1,513 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Мова</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Комунальні платежі</value>
+  </data>
+  <data name="UnhandledError" xml:space="preserve">
+    <value>Виникла непердбачувана помилка.</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>Перезавантажити</value>
+  </data>
+  <data name="Homes" xml:space="preserve">
+    <value>Домівки</value>
+  </data>
+  <data name="Tariffs" xml:space="preserve">
+    <value>Тарифи</value>
+  </data>
+  <data name="Services" xml:space="preserve">
+    <value>Послуги</value>
+  </data>
+  <data name="AdditionalMetersPayments" xml:space="preserve">
+    <value>Додаткові платежі за лічільником</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Налаштування</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>Загальні</value>
+  </data>
+  <data name="Service" xml:space="preserve">
+    <value>Послуга</value>
+  </data>
+  <data name="Cost" xml:space="preserve">
+    <value>Вартість</value>
+  </data>
+  <data name="Difference" xml:space="preserve">
+    <value>Обсяг</value>
+  </data>
+  <data name="Sum" xml:space="preserve">
+    <value>Сума</value>
+  </data>
+  <data name="ByArea" xml:space="preserve">
+    <value>За площею</value>
+  </data>
+  <data name="Area" xml:space="preserve">
+    <value>Площа</value>
+  </data>
+  <data name="AdditionalFixedPayments" xml:space="preserve">
+    <value>Додаткові фіксовані платежі</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>Ціна</value>
+  </data>
+  <data name="MetersMeasurements" xml:space="preserve">
+    <value>Показники лічільників</value>
+  </data>
+  <data name="PreviousMeasure" xml:space="preserve">
+    <value>Попереднє</value>
+  </data>
+  <data name="CurrentMeasure" xml:space="preserve">
+    <value>Поточне</value>
+  </data>
+  <data name="Month" xml:space="preserve">
+    <value>Місяць</value>
+  </data>
+  <data name="NotFixedPayments" xml:space="preserve">
+    <value>Не фіксовані послуги</value>
+  </data>
+  <data name="VolumePayments" xml:space="preserve">
+    <value>Платежі за обсягом спожитого</value>
+  </data>
+  <data name="AddHome" xml:space="preserve">
+    <value>Додати домівку</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Назва</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Країна</value>
+  </data>
+  <data name="Region" xml:space="preserve">
+    <value>Область</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>Місто</value>
+  </data>
+  <data name="Street" xml:space="preserve">
+    <value>Вулиця</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Домівка</value>
+  </data>
+  <data name="Apartment" xml:space="preserve">
+    <value>Квартира</value>
+  </data>
+  <data name="IsDefault" xml:space="preserve">
+    <value>За замовчуванням</value>
+  </data>
+  <data name="ValidationSummary" xml:space="preserve">
+    <value>Помилки</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Відміна</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Створити</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Оновити</value>
+  </data>
+  <data name="HomeAddedOk" xml:space="preserve">
+    <value>Домівка {0} додана</value>
+  </data>
+  <data name="HomeUpdatedOk" xml:space="preserve">
+    <value>Домівка {0} оновлена</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Помилка</value>
+  </data>
+  <data name="AddTariff" xml:space="preserve">
+    <value>Додати тариф</value>
+  </data>
+  <data name="SelectService" xml:space="preserve">
+    <value>Оберіть послугу</value>
+  </data>
+  <data name="NoDefaultHome" xml:space="preserve">
+    <value>В системі не знайдено будинку за замовчанням. Створіть або оберіть його в налаштуваннях і спробуйте знову.</value>
+  </data>
+  <data name="GoToSettings" xml:space="preserve">
+    <value>Перейти до налаштувань</value>
+  </data>
+  <data name="Building" xml:space="preserve">
+    <value>Будинок</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Дата початку</value>
+  </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>Дата кінця</value>
+  </data>
+  <data name="SelectTariffType" xml:space="preserve">
+    <value>Оберіть тип тарифу</value>
+  </data>
+  <data name="TariffType.Meters.Tooltip" xml:space="preserve">
+    <value>Сума залежить від показників лічільника</value>
+  </data>
+  <data name="TariffType.Volume.Tooltip" xml:space="preserve">
+    <value>Сума залежить від обсягу спожитої послуги, без введення показників лічільника</value>
+  </data>
+  <data name="TariffType.Volume" xml:space="preserve">
+    <value>За обсягом</value>
+  </data>
+  <data name="TariffType.Meters" xml:space="preserve">
+    <value>Лічильник</value>
+  </data>
+  <data name="TariffType.Fixed.Tooltip" xml:space="preserve">
+    <value>Фіксована сума кожен місяць</value>
+  </data>
+  <data name="TariffType.Fixed" xml:space="preserve">
+    <value>Фіксований</value>
+  </data>
+  <data name="TariffType.NotFixedPayment" xml:space="preserve">
+    <value>Не фіксований</value>
+  </data>
+  <data name="TariffType.NotFixedPayment.Tooltip" xml:space="preserve">
+    <value>Довільна сума кожен місяць</value>
+  </data>
+  <data name="TariffType.HouseHoldArea" xml:space="preserve">
+    <value>За площею</value>
+  </data>
+  <data name="TariffType.HouseHoldArea.Tooltip" xml:space="preserve">
+    <value>Сума залежить від площі помешкання</value>
+  </data>
+  <data name="Units" xml:space="preserve">
+    <value>Одиниці вимірювання</value>
+  </data>
+  <data name="UseLimits" xml:space="preserve">
+    <value>Використовувати ліміти</value>
+  </data>
+  <data name="UpperLimit" xml:space="preserve">
+    <value>Верхній ліміт</value>
+  </data>
+  <data name="PriceOverLimit" xml:space="preserve">
+    <value>Ціна вище ліміту</value>
+  </data>
+  <data name="UseAdditionalFeeLabel" xml:space="preserve">
+    <value>Додатковий платіж за {0}</value>
+  </data>
+  <data name="ForUnit" xml:space="preserve">
+    <value>одиницю виміру</value>
+  </data>
+  <data name="Sqm" xml:space="preserve">
+    <value>кв.м.</value>
+  </data>
+  <data name="AdditionalFeeName" xml:space="preserve">
+    <value>Назва додаткового платежу</value>
+  </data>
+  <data name="UseFixedPayLabel" xml:space="preserve">
+    <value>Додатковий фіксований платіж</value>
+  </data>
+  <data name="FixedPayName" xml:space="preserve">
+    <value>Назва фіксованого платежу</value>
+  </data>
+  <data name="TariffAddedOk" xml:space="preserve">
+    <value>Тариф {0} створено</value>
+  </data>
+  <data name="TariffUpdatedOk" xml:space="preserve">
+    <value>Тариф {0} оновлено</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Редагувати</value>
+  </data>
+  <data name="Disable" xml:space="preserve">
+    <value>Деактивувати</value>
+  </data>
+  <data name="Enable" xml:space="preserve">
+    <value>Активувати</value>
+  </data>
+  <data name="ConfirmTariffDeactivation" xml:space="preserve">
+    <value>Ви дійсно хочете деактивувати тариф?</value>
+  </data>
+  <data name="ConfirmTariffDeactivationHelp" xml:space="preserve">
+    <value>Щоб підтвердити дію, введіть останній день дії тарифу та підтвердіть деактивацію</value>
+  </data>
+  <data name="ConfirmTariffDeactivationAddNew" xml:space="preserve">
+    <value>Додати новий тариф на основі того, що деактивується?</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Видалити</value>
+  </data>
+  <data name="DeleteHomeConfirmation" xml:space="preserve">
+    <value>Ви справді хочете видалити цю домівку? Всі пов'язані тарифи та рахунки також будуть видалені. Цей процес не можна скасувати.</value>
+  </data>
+  <data name="HomeDeletedOk" xml:space="preserve">
+    <value>Домівку {0} видалено</value>
+  </data>
+  <data name="HomeDeletedError" xml:space="preserve">
+    <value>Не вдалося видалити домівку {0}. Помилка: {1}</value>
+  </data>
+  <data name="HomeSetAsDefaultConfirmation" xml:space="preserve">
+    <value>Ви впевнені, що хочете встановити {0} як свою домівку за замовчуванням?</value>
+  </data>
+  <data name="HomeSetAsDefault" xml:space="preserve">
+    <value>Встановити за замовчуванням</value>
+  </data>
+  <data name="HomeSetAsDefaultOk" xml:space="preserve">
+    <value>Домівка {0} була встановлена ​​як за замовчуванням</value>
+  </data>
+  <data name="HomeSetAsDefaultError" xml:space="preserve">
+    <value>Не вдалося встановити домівку {0} як за замовчуванням. Помилка: {1}</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Активні</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Неактивні</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Тип</value>
+  </data>
+  <data name="ActiveFrom" xml:space="preserve">
+    <value>Діє з</value>
+  </data>
+  <data name="TotalServicesOne" xml:space="preserve">
+    <value>Всього до оплати: {0} послуга</value>
+  </data>
+  <data name="TotalServicesTwoFour" xml:space="preserve">
+    <value>Всього до оплати: {0} послуги</value>
+  </data>
+  <data name="TotalServicesFivePlus" xml:space="preserve">
+    <value>Всього до оплати: {0} послуг</value>
+  </data>
+  <data name="DeleteTariffConfirmation" xml:space="preserve">
+    <value>Ви дійсно хочете видалити цей тариф? Усі пов'язані рахунки також будуть видалені. Можливо, краще деактивуйте цей тариф. Процес видалення неможливо скасувати.</value>
+  </data>
+  <data name="TariffDeletedOk" xml:space="preserve">
+    <value>Тариф {0} ({1}) видалено</value>
+  </data>
+  <data name="TariffDeletedError" xml:space="preserve">
+    <value>Не вдалося видалити тариф {0}. Помилка: {1}</value>
+  </data>
+  <data name="AddService" xml:space="preserve">
+    <value>Додати послугу</value>
+  </data>
+  <data name="UtilitiesDeleteConfirmation" xml:space="preserve">
+    <value>Ви дійсно хочете видалити цю послугу? Усі тарифи, та чеки, які її використовують, будуть видалені. Цю дію неможливо відмінити.</value>
+  </data>
+  <data name="UtilitiesDeleteOk" xml:space="preserve">
+    <value>Помилка при видаленні {0}: {1}</value>
+  </data>
+  <data name="UtilitiesDeleteError" xml:space="preserve">
+    <value>Послуга {0} видалена</value>
+  </data>
+  <data name="UtilitiesByMonth" xml:space="preserve">
+    <value>{0} по місяцях</value>
+  </data>
+  <data name="MetersByYear" xml:space="preserve">
+    <value>Споживання за {0} рік</value>
+  </data>
+  <data name="MetersByAllYears" xml:space="preserve">
+    <value>Споживання за усі роки</value>
+  </data>
+  <data name="AllYears" xml:space="preserve">
+    <value>Всі роки</value>
+  </data>
+  <data name="ByYear_WithMeasures" xml:space="preserve">
+    <value>За обсягом спожитого</value>
+  </data>
+  <data name="ByYear_ByCost" xml:space="preserve">
+    <value>Не фіксовані платежі</value>
+  </data>
+  <data name="NotFixedByYear" xml:space="preserve">
+    <value>Не фіксовані послуги за {0} рік</value>
+  </data>
+  <data name="NotFixedByAllYears" xml:space="preserve">
+    <value>Не фіксовані послуги за всі роки</value>
+  </data>
+  <data name="VolumeByYear" xml:space="preserve">
+    <value>поживання за обсягом спожитого за {0} рік</value>
+  </data>
+  <data name="VolumeByAllYears" xml:space="preserve">
+    <value>поживання за обсягом спожитого за всі роки</value>
+  </data>
+  <data name="CheckFor" xml:space="preserve">
+    <value>Рахунок за</value>
+  </data>
+  <data name="PaymentDate" xml:space="preserve">
+    <value>Дата оплати</value>
+  </data>
+  <data name="ZeroCheck" xml:space="preserve">
+    <value>Нульовий чек</value>
+  </data>
+  <data name="ZeroCheckDescription" xml:space="preserve">
+    <value>Використовується для актуалізації показників без прорахунку вартості.</value>
+  </data>
+  <data name="NoTariffsForDate" xml:space="preserve">
+    <value>У цьому домогосподарстві нема жодного тарифу для {0} . Для того, щоб почати роботу, додайте тарифи в налаштуваннях.</value>
+  </data>
+  <data name="Limits" xml:space="preserve">
+    <value>Ліміти</value>
+  </data>
+  <data name="AdditionalFee" xml:space="preserve">
+    <value>Додатковий тариф</value>
+  </data>
+  <data name="TodaysTariffs" xml:space="preserve">
+    <value>Тарифи на сьогодні</value>
+  </data>
+  <data name="NoTariffs" xml:space="preserve">
+    <value>У цьому домогосподарстві нема жодного тарифу. Для того, щоб почати роботу, додайте тарифи в налаштуваннях.</value>
+  </data>
+  <data name="AddCheck" xml:space="preserve">
+    <value>Створити чек</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="PerPage" xml:space="preserve">
+    <value>Показати:</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>Статистика</value>
+  </data>
+  <data name="NoHomes" xml:space="preserve">
+    <value>Домівки не знайдено. Будь ласка, перевірте налаштування</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>Ок</value>
+  </data>
+  <data name="CurrentMeasureFull" xml:space="preserve">
+    <value>Поточний показник лічільника</value>
+  </data>
+  <data name="ConsumedVolume" xml:space="preserve">
+    <value>Спожитий обсяг</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Скопіювати</value>
+  </data>
+  <data name="CopyOk" xml:space="preserve">
+    <value>Зображення скопійовано в буфер обміну</value>
+  </data>
+  <data name="CopyDownloadOk" xml:space="preserve">
+    <value>Зображення завантажено</value>
+  </data>
+  <data name="CheckDeleteConfirmation" xml:space="preserve">
+    <value>Ви дійсно хочете видалити цей чек? Цей процес не можна скасувати.</value>
+  </data>
+  <data name="CheckDeletedOk" xml:space="preserve">
+    <value>Чек за {0} з будинку {1} видалено</value>
+  </data>
+  <data name="CheckDeletedError" xml:space="preserve">
+    <value>Помилка при видаленні чеку {0} з будинку {1}. {2}</value>
+  </data>
+</root>

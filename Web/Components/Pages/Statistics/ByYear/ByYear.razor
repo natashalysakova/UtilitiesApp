@@ -1,16 +1,14 @@
 ﻿@using ApexCharts;
 
+@inject ILocalizationService Localizer
+
 @if (Checks is null)
 {
     return;
 }
 
-@{
-    var title = $"Споживання за " + (_yearSelected == 0 ? "усі роки" : _yearSelected + " рік");
-}
-
 <MudSelect Variant="Variant.Outlined" T="int" @bind-Value="@_yearSelected" SelectedValuesChanged="ReloadCharts">
-    <MudSelectItem Value="0">Усі роки</MudSelectItem>
+    <MudSelectItem Value="0">@Localizer["AllYears"]</MudSelectItem>
     @foreach (var item in _yearsList)
     {
         <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -19,10 +17,10 @@
 
 <ByYearMetersApex SelectedYear="@_yearSelected" Checks="@Checks"></ByYearMetersApex>
 <MudExpansionPanels>
-    <MudExpansionPanel Text="За обсягом спожитого" >
+    <MudExpansionPanel Text="@Localizer["ByYear_WithMeasures"]" >
         <ByYearVolume SelectedYear="@_yearSelected" Checks="@Checks"></ByYearVolume>
     </MudExpansionPanel>
-    <MudExpansionPanel Text="Не фіксовані платежі" >
+    <MudExpansionPanel Text="@Localizer["ByYear_ByCost"]" >
         <ByYearNotFixedApex SelectedYear="@_yearSelected" Checks="@Checks"></ByYearNotFixedApex>
     </MudExpansionPanel>
 </MudExpansionPanels>

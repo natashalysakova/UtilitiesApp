@@ -32,10 +32,10 @@
 
 @code {
     [Parameter]
-    public string HomeId { get; set; }
+    public required string HomeId { get; set; }
 
     [Parameter]
-    public string UtilityId { get; set; }
+    public required string UtilityId { get; set; }
 
     public IEnumerable<CheckViewDto>? Model { get; set; }
     public Guid? SelectedUtility { get; set; }

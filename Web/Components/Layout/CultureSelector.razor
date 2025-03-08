@@ -1,0 +1,43 @@
+﻿@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<p>
+    <MudSelect T="CultureInfo" @bind-Value="selectedCulture"
+               SelectedValuesChanged="ApplySelectedCultureAsync"
+               AdornmentIcon="fa-solid fa-globe" Adornment="Adornment.None"
+               Variant="Variant.Outlined" FullWidth="false" AutoFocus="false">
+        @foreach (var culture in LocalizationService.SupportedCultures)
+        {
+            var countryCode = new RegionInfo(culture.Name).TwoLetterISORegionName;
+            var url = $"https://flagcdn.com/{countryCode.ToLower()}.svg";
+            <MudSelectItem Value="culture"><img src="@url" width="30" /></MudSelectItem>
+        }
+    </MudSelect>
+</p>
+
+@code
+{
+
+
+    private CultureInfo? selectedCulture;
+
+    protected override void OnInitialized()
+    {
+        selectedCulture = CultureInfo.CurrentCulture;
+    }
+
+    private async Task ApplySelectedCultureAsync()
+    {
+        if (CultureInfo.CurrentCulture != selectedCulture)
+        {
+            var uri = new Uri(Navigation.Uri)
+                .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+            var cultureEscaped = Uri.EscapeDataString(selectedCulture.Name);
+            var uriEscaped = Uri.EscapeDataString(uri);
+
+            Navigation.NavigateTo(
+                $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                forceLoad: true);
+        }
+    }
+}

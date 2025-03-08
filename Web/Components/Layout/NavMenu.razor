@@ -2,6 +2,7 @@
 
 @inject MenuUpdateService NavigationService
 @inject ApiClient Client
+@inject ILocalizationService Localizer
 
 <MudNavMenu Style="font-size: 1rem;" Color="Color.Primary">
 
@@ -22,11 +23,11 @@
             <MudNavLink Href="@url" Icon="@icon" Match="NavLinkMatch.Prefix">@link.Name</MudNavLink>
         }
     }
-    <MudNavGroup Title="Налаштування" Expanded="true" Icon="@Icons.Material.Outlined.Settings">
-        @*<MudNavLink Href="/settings" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.AppSettingsAlt">Загальні</MudNavLink>*@
-        <MudNavLink Href="/settings/homes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.HomeWork">Домівки</MudNavLink>
-        <MudNavLink Href="/settings/tariffs" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AttachMoney">Тарифи</MudNavLink>
-        <MudNavLink Href="/settings/utilities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ElectricMeter">Послуги</MudNavLink>
+    <MudNavGroup Title="@Localizer["Settings"]" Expanded="true" Icon="@Icons.Material.Outlined.Settings">
+        @*<MudNavLink Href="/settings" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.AppSettingsAlt">@Localizer["General"]</MudNavLink>*@
+        <MudNavLink Href="/settings/homes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.HomeWork">@Localizer["Homes"]</MudNavLink>
+        <MudNavLink Href="/settings/tariffs" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AttachMoney">@Localizer["Tariffs"]</MudNavLink>
+        <MudNavLink Href="/settings/utilities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ElectricMeter">@Localizer["Services"]</MudNavLink>
     </MudNavGroup>
 </MudNavMenu>
 

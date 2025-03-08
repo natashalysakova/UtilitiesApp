@@ -7,17 +7,17 @@
 @using System.Collections.Generic;
 @using System.Reflection.Metadata
 
-@inject ApiClient ApiClient;
-@inject CheckCalculateService Service;
-@inject NavigationManager NavigationManager;
-@inject ILogger<AddCheck> Logger;
+@inject ApiClient ApiClient
+@inject CheckCalculateService Service
+@inject NavigationManager NavigationManager
+@inject ILocalizationService Localizer
 
 <MudGrid Class="pt-4">
     @if (_displayAlert)
     {
         <MudItem xs="12">
             <MudPaper Class="pa-4">
-                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                <MudText Typo="Typo.subtitle2">@Localizer["Error"]</MudText>
                 <MudText Color="@Color.Error">
                     @if (_validationResult is not null)
                     {
@@ -42,10 +42,10 @@
         @if (Model != null)
         {
             <MudStack>
-                <MudText Typo="Typo.h4">Рахунок за @Model.Date!.Value.ToShortDateString()</MudText>
+                <MudText Typo="Typo.h4">@Localizer["CheckFor"] @Model.Date!.Value.ToShortDateString()</MudText>
                 <MudGrid Justify="Justify.SpaceBetween">
                     <MudItem xs="4">
-                        <MudDatePicker @bind-Date="Model.Date" Label="Дата оплати" MinDate="@_minAvailableDate" Editable="true" PickerClosed="ReFill"></MudDatePicker>
+                        <MudDatePicker @bind-Date="Model.Date" Label="@Localizer["PaymentDate"]" MinDate="@_minAvailableDate" Editable="true" PickerClosed="ReFill"></MudDatePicker>
                     </MudItem>
                 </MudGrid>
                 <MudGrid>
@@ -77,13 +77,13 @@
                     <MudFlexBreak />
                     <MudItem xs="6">
                         <MudStack Spacing="0" Wrap="Wrap.NoWrap">
-                            <MudCheckBox Label="Нульовий чек" @bind-Value="@Model.IsZeroCheck" Color="Color.Warning">
+                            <MudCheckBox Label="@Localizer["ZeroCheck"]" @bind-Value="@Model.IsZeroCheck" Color="Color.Warning">
                             </MudCheckBox>
-                            <MudText Class="pl-4" Typo="Typo.overline" Color="Color.Warning">Використовується для актуалізації показників без прорахунку вартості.</MudText>
+                            <MudText Class="pl-4" Typo="Typo.overline" Color="Color.Warning">@Localizer["ZeroCheckDescription"]</MudText>
                             <MudTextField @bind-Value="@Model.IsZeroCheck" TextChanged="FillAndCalculate" Class="invisible"></MudTextField>
                         </MudStack>
                     </MudItem>
-                    <MudSpacer/>
+                    <MudSpacer />
                     <MudItem xs="6">
                         <MudStack Row="true" Reverse="true">
                             <MudText Align="Align.End" Typo="Typo.h5">
@@ -100,7 +100,7 @@
                         <MudStack Row="true" Justify="Justify.FlexEnd" Class="pa-4">
                             <MudSpacer />
                             <MudButton Variant="Variant.Text" Href="@($"/home/{HouseId}/checks/{CheckId}")">Відмінити</MudButton>
-                            <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" OnClick="SubmitCheck">Зберегти</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" OnClick="SubmitCheck">@Localizer[IsEditMode ? "Update" : "Create"]</MudButton>
                         </MudStack>
                     </MudItem>
                 </MudGrid>
@@ -119,16 +119,16 @@
                 <MudAlert Severity="Severity.Warning">
                     <MudStack>
                         <MudText Align="Align.Center">
-                            У цьому домогосподарстві нема жодного тарифу для @Model.Date?.ToShortDateString() . Для того, щоб почати роботу, додайте тарифи в налаштуваннях.
+                            @Localizer["NoTariffsForDate", Model.Date!.Value.ToShortDateString()]
                         </MudText>
-                        <MudButton Href="settings/tariffs" Variant="Variant.Outlined" Color="Color.Warning">Перейти до налаштувань</MudButton>
+                        <MudButton Href="settings/tariffs" Variant="Variant.Outlined" Color="Color.Warning">@Localizer["GoToSettings"]</MudButton>
                     </MudStack>
                 </MudAlert>
             }
             else
             {
                 <MudExpansionPanels>
-                    @*                     <MudExpansionPanel Text="Тарифи" Expanded="false">
+                    @*                     <MudExpansionPanel Text="@Localizer["Tariffs"]" Expanded="false">
                         <CompactTariffTable Model="Tariffs" ShowDateColumn="true" Elevation="0"></CompactTariffTable>
                     </MudExpansionPanel> *@
                 </MudExpansionPanels>
@@ -145,14 +145,12 @@
     public string? CheckId { get; set; }
 
     public CheckEditDto? Model { get; set; }
-
+    public bool IsEditMode;
     public ICollection<TariffCalulateDto>? Tariffs { get; set; }
     private DateTime _minAvailableDate = DateTime.MinValue;
 
     protected override void OnInitialized()
     {
-        Logger.LogInformation("OnInitialized");
-        
         Service.OnRefreshRequested += FillAndCalculate;
     }
 
@@ -177,6 +175,7 @@
         }
         else
         {
+            IsEditMode = true;
             try
             {
                 var checkId = Guid.Parse(CheckId);
@@ -204,8 +203,6 @@
 
     private async Task SubmitCheck()
     {
-        Logger.LogInformation("SubmitCheck");
-
         try
         {
             var result = await ApiClient.Check_PutAsync(Model!.Id, Model);
@@ -229,11 +226,8 @@
         if (Model == null)
             return;
 
-        Logger.LogInformation("FillAndCalculate");
         try
         {
-            Logger.LogInformation(string.Join(",", Model.Records.Select(x => x.Measure.ToString())));
-
             Model.Amount = await ApiClient.Check_PostCalculateActionAsync(Model);
             StateHasChanged();
         }
@@ -252,8 +246,6 @@
 
     private void ReFill()
     {
-        Logger.LogInformation("ReFill");
-
         if (Model == null)
             return;
 
@@ -278,8 +270,6 @@
 
     private void ReloadSupportingData()
     {
-        Logger.LogInformation("ReloadSupportingData");
-
         if (Model == null)
             return;
 

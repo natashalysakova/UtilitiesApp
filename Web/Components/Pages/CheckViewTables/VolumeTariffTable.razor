@@ -2,17 +2,18 @@
 
 @inject CheckCalculateService Service
 @inject ApiClient ApiClient
+@inject ILocalizationService Localizer
 
 @if (_filtered != null && _filtered.Any())
 {
-    <MudText Typo="Typo.h6">Платежі за обсягом спожитого</MudText>
+    <MudText Typo="Typo.h6">@Localizer["VolumePayments"]</MudText>
     <MudDataGrid T="RecordEditDto" Items="@_filtered"
                  Bordered="true" Dense="true"
                  EditMode="DataGridEditMode.Cell" ReadOnly="false"
                  SortMode="SortMode.None">
         <Columns>
-            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" HeaderStyle="width:auto;" StickyLeft="true" Title="Послуга" Editable="false" />
-            <PropertyColumn HeaderStyle="width:20%; min-width:150px;" Property="x=>x.Measure" Title="Поточне" Culture="@_culture"
+            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" HeaderStyle="width:auto;" StickyLeft="true" Title="@Localizer["Service"]" Editable="false" />
+            <PropertyColumn HeaderStyle="width:20%; min-width:150px;" Property="x=>x.Measure" Title="@Localizer["CurrentMeasure"]" Culture="@_culture"
                             CellClass="visible-input" HeaderClass="visible-input">
                 <EditTemplate>
                     <MudNumericField @bind-Value="context.Item.Measure"
@@ -23,8 +24,8 @@
                                      TextChanged="@(async()=>{ await CommittedItemChanges(context.Item);})"></MudNumericField>
                 </EditTemplate>
             </PropertyColumn>
-            <PropertyColumn HeaderStyle="width:15%;" Property="x=>x.Tariff.Cost" Format="C" Editable="false" Title="Ціна" />
-            <PropertyColumn HeaderStyle="width: 15%" Property="x=>x.Cost" Title="Сума" Format="C" StickyRight="true" Editable="false" />
+            <PropertyColumn HeaderStyle="width:15%;" Property="x=>x.Tariff.Cost" Format="C" Editable="false" Title="@Localizer["Cost"]" />
+            <PropertyColumn HeaderStyle="width: 15%" Property="x=>x.Cost" Title="@Localizer["Sum"]" Format="C" StickyRight="true" Editable="false" />
         </Columns>
     </MudDataGrid>
 }

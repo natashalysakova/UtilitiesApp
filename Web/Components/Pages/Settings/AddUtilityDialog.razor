@@ -1,4 +1,5 @@
 ﻿@inject ApiClient ApiClient
+@inject ILocalizationService Localizer
 
 @if (_model != null)
 {
@@ -8,30 +9,23 @@
             <TitleContent>
                 @if (IsEditMode)
                 {
-                    <MudText Typo="Typo.h4">Редагувати</MudText>
+                    <MudText Typo="Typo.h4">@Localizer["Edit"]</MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.h4">Додати домівку</MudText>
+                    <MudText Typo="Typo.h4">@Localizer["AddHome"]</MudText>
                 }
             </TitleContent>
             <DialogContent>
                 <DataAnnotationsValidator />
                 <MudStack>
-                    <MudTextField @bind-Value="@_model.Name" For="@(()=> _model.Name)" Label="Назва"></MudTextField>
+                    <MudTextField @bind-Value="@_model.Name" For="@(()=> _model.Name)" Label="@Localizer["Name"]"></MudTextField>
                 </MudStack>
             </DialogContent>
             <DialogActions>
-                <MudButton OnClick="Cancel">Відміна</MudButton>
+                <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
                 <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit">
-                    @if (IsEditMode)
-                    {
-                        <span>Оновити</span>
-                    }
-                    else
-                    {
-                        <span>Створити</span>
-                    }
+                    <span>@Localizer[IsEditMode ? "Update" : "Create"]</span>                    
                 </MudButton>
             </DialogActions>
         </MudDialog>

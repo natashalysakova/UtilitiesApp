@@ -1,19 +1,20 @@
 ﻿@using Web.NavigationServices
 
 @inject CheckCalculateService Service
+@inject ILocalizationService Localizer
 
 @if (_filtered != null && _filtered.Any())
 {
-    <MudText Typo="Typo.h6">Додаткові платежі за лічільником</MudText>
+    <MudText Typo="Typo.h6">@Localizer["AdditionalMetersPayments"]</MudText>
     <MudDataGrid Items="@_filtered" Bordered="true" Dense="true"
     SortMode="SortMode.None" >
         <Columns>
-            <PropertyColumn Property="x=>x.Tariff.AdditionalFeeName" StickyLeft="true" Title="Послуга" Editable="false" />
+            <PropertyColumn Property="x=>x.Tariff.AdditionalFeeName" StickyLeft="true" Title="@Localizer["Service"]" Editable="false" />
             <PropertyColumn Format="C"
                             Property="x=>x.Tariff.AdditionalFeeCost"
-                            Editable="false" Title="Вартість" />
-            <PropertyColumn Property="x=>x.Difference" Editable="false" Title="Кількість" Format="0.##" />
-            <PropertyColumn HeaderStyle="width: 25%" Property="x=>x.AdditionalSum" Title="Сума" Format="C" StickyRight="true" Editable="false" />
+                            Editable="false" Title="@Localizer["Cost"]" />
+            <PropertyColumn Property="x=>x.Difference" Editable="false" Title="@Localizer["Difference"]" Format="0.##" />
+            <PropertyColumn HeaderStyle="width: 25%" Property="x=>x.AdditionalSum" Title="@Localizer["Sum"]" Format="C" StickyRight="true" Editable="false" />
         </Columns>
     </MudDataGrid>
 }

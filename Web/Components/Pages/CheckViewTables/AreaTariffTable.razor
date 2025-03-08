@@ -1,17 +1,18 @@
 ﻿@using Web.NavigationServices
 
 @inject CheckCalculateService Service
+@inject ILocalizationService Localizer
 
 @if (_filtered != null && _filtered.Any())
 {
-    <MudText Typo="Typo.h6">За площею</MudText>
+    <MudText Typo="Typo.h6">@Localizer["ByArea"]</MudText>
     <MudDataGrid Items="@_filtered" Bordered="true" Dense="true"
                   SortMode="SortMode.None" >
         <Columns>
-            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="Послуга" Editable="false" />
-            <PropertyColumn Property="x=>x.Tariff.Cost" Format="N2" Title="Ціна" Editable="false" />
-            <PropertyColumn Property="x=>x.Tariff.HomeArea" Title="Площа" Editable="false" />
-            <PropertyColumn Property="x=>x.Cost" Format="C" Title="Сума" StickyRight="true" Editable="false" />
+            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="@Localizer["ByArea"]" Editable="false" />
+            <PropertyColumn Property="x=>x.Tariff.Cost" Format="N2" Title="@Localizer["Cost"]" Editable="false" />
+            <PropertyColumn Property="x=>x.Tariff.HomeArea" Title="@Localizer["Area"]" Editable="false" />
+            <PropertyColumn Property="x=>x.Cost" Format="C" Title="@Localizer["Sum"]" StickyRight="true" Editable="false" />
         </Columns>
     </MudDataGrid>
 }

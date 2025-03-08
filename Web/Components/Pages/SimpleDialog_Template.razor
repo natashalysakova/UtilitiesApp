@@ -1,9 +1,11 @@
-﻿<MudDialog>
+﻿@inject ILocalizationService Localizer
+
+<MudDialog>
     <DialogContent>
         <MudText>@ContentText</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
         <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@ButtonText</MudButton>
     </DialogActions>
 </MudDialog>
@@ -16,8 +18,8 @@
     [Parameter, EditorRequired]
     public required string ContentText { get; set; }
 
-    [Parameter]
-    public string ButtonText { get; set; } = "OK";
+    [Parameter, EditorRequired]
+    public required string ButtonText { get; set; }
 
     [Parameter]
     public Color Color { get; set; } = Color.Primary;

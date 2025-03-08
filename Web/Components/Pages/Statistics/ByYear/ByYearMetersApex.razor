@@ -1,49 +1,51 @@
 ﻿@using ApexCharts;
 
+@inject ILocalizationService Localizer
+
 @if (Checks is null || !Checks.Any())
 {
-return;
+    return;
 }
 
 @{
-    var title = $"Споживання по лічільнику за " + (SelectedYear == 0 ? "усі роки" : SelectedYear + " рік");
+    var title = SelectedYear == 0 ? Localizer["MetersByAllYears"] : Localizer["MetersByYear", SelectedYear];
 }
 
 <ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Title="@title" Options="@_options">
 
     @{
-var utilities = Checks
-.SelectMany(x => x.Records)
-.Where(x => x.Tariff.TariffType is TariffType.Meters)
-.Select(x => x.Tariff)
-.DistinctBy(x => x.UtilityGroupId)
-.ToDictionary(x => x.UtilityGroupId, x => x.UtilityGroupName);
+        var utilities = Checks
+        .SelectMany(x => x.Records)
+        .Where(x => x.Tariff.TariffType is TariffType.Meters)
+        .Select(x => x.Tariff)
+        .DistinctBy(x => x.UtilityGroupId)
+        .ToDictionary(x => x.UtilityGroupId, x => x.UtilityGroupName);
 
-foreach (var utility in utilities)
-{
-    if (SelectedYear != 0)
-    {
-        var byMonth = Checks
-        .Where(x => x.Date.Year == SelectedYear && x.IsZeroCheck == false)
-        .GroupBy(x => x.Date)
-        .OrderBy(x => x.Key);
+        foreach (var utility in utilities)
+        {
+            if (SelectedYear != 0)
+            {
+                var byMonth = Checks
+                .Where(x => x.Date.Year == SelectedYear && x.IsZeroCheck == false)
+                .GroupBy(x => x.Date)
+                .OrderBy(x => x.Key);
 
-        <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
+                <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
                                  Items="byMonth"
                                  Name="@utility.Value"
                                  SeriesType="SeriesType.Line"
                                  XValue="@(e => e.Key)"
                                  YAggregate="@(e => e.Sum(e => e.SelectMany(x=>x.Records).Where(x=>x.Tariff.UtilityGroupId == utility.Key).Sum(x=> x.Difference)))"
                                  OrderByDescending="e=>e.X" />
-    }
-    else
-    {
-        var byMonth = Checks
-        .Where(x => x.IsZeroCheck == false)
-        .GroupBy(x => x.Date)
-        .OrderBy(x => x.Key);
+            }
+            else
+            {
+                var byMonth = Checks
+                .Where(x => x.IsZeroCheck == false)
+                .GroupBy(x => x.Date)
+                .OrderBy(x => x.Key);
 
-        <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
+                <ApexPointSeries TItem="IGrouping<DateTime, CheckViewDto>"
                                  Items="byMonth"
                                  Name="@utility.Value"
                                  SeriesType="SeriesType.Line"
@@ -56,44 +58,44 @@ foreach (var utility in utilities)
 </ApexChart>
 
 @code {
-[Parameter, EditorRequired]
-public IEnumerable<CheckViewDto>? Checks { get; set; }
-[Parameter, EditorRequired]
-public int SelectedYear { get; set; }
+    [Parameter, EditorRequired]
+    public IEnumerable<CheckViewDto>? Checks { get; set; }
+    [Parameter, EditorRequired]
+    public int SelectedYear { get; set; }
 
-private ApexChart<IGrouping<DateTime, CheckViewDto>>? _chart1;
-private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
+    private ApexChart<IGrouping<DateTime, CheckViewDto>>? _chart1;
+    private ApexChartOptions<IGrouping<DateTime, CheckViewDto>> _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>();
 
 
-protected override void OnParametersSet()
-{
-_chart1?.RenderAsync();
-}
-
-protected override void OnInitialized()
-{
-_options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
+    protected override void OnParametersSet()
     {
-        Debug = true,
-        Theme = new Theme
-        {
-            Mode = Mode.Dark,
-            Palette = PaletteType.Palette1,
-        },
+        _chart1?.RenderAsync();
+    }
 
-        Chart = new Chart
-        {
-            Toolbar = new Toolbar
+    protected override void OnInitialized()
+    {
+        _options = new ApexChartOptions<IGrouping<DateTime, CheckViewDto>>
             {
-                Show = false
-            }
-        },
+                Debug = true,
+                Theme = new Theme
+                {
+                    Mode = Mode.Dark,
+                    Palette = PaletteType.Palette1,
+                },
 
-        Xaxis = new XAxis()
-        {
-            Type = XAxisType.Datetime
-        },
-        Stroke = new Stroke { Curve = Curve.Smooth },
-    };
-}
+                Chart = new Chart
+                {
+                    Toolbar = new Toolbar
+                    {
+                        Show = false
+                    }
+                },
+
+                Xaxis = new XAxis()
+                {
+                    Type = XAxisType.Datetime
+                },
+                Stroke = new Stroke { Curve = Curve.Smooth },
+            };
+    }
 }

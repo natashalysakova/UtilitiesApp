@@ -1,15 +1,13 @@
 ﻿@using ApexCharts;
 
+@inject ILocalizationService Localizer
+
 @if (Checks is null || !Checks.Any())
 {
     return;
 }
 
-@{
-    var title = $"{SelectedUtility.Name} по місяцях";
-}
-
-<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Title="@title" Options="@_options">
+<ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Title="@Localizer["UtilitiesByMonth", SelectedUtility.Name]" Options="@_options">
 
     @{
         var years = Checks.Select(x => x.Date.Year).Distinct().Order();
@@ -31,8 +29,6 @@
         }
     }
 </ApexChart>
-
-@* YAggregate="@(e => e.Sum(e => e.SelectMany(x=>x.Records).Where(x=>x.Tariff.UtilityGroupId == SelectedUtility.Id).Sum(x=>x.Measure)))" *@
 
 @code {
     [Parameter, EditorRequired]

@@ -1,15 +1,22 @@
 ﻿@inject ApiClient ApiClient
+@inject ILocalizationService Localizer
 
 @if (_model != null)
 {
     <MudDialog Style="height:auto;">
         <DialogContent>
             <MudStack Spacing="2">
-                <MudText>Ви дійсно хочете деактивувати тариф?</MudText>
-                <MudText>Щоб підтвердити дію, введіть останній день дії тарифу та підтвердіть деактивацію</MudText>
+                <MudText>@Localizer["ConfirmTariffDeactivation"]</MudText>
+                <MudText>@Localizer["ConfirmTariffDeactivationHelp"]</MudText>
 
-                <MudDatePicker @bind-Date="@_model.EndDate" For="@(()=> _model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="Дата кінця" />
-                <MudCheckBox @bind-Value="@_createNew">Додати новий тариф на основі того, що деактивується?</MudCheckBox>
+                <MudDatePicker @bind-Date="@_model.EndDate"
+                               For="@(()=> _model.EndDate)"
+                               AdornmentColor="Color.Primary"
+                               Context="picker2"
+                               Label="@Localizer["EndDate"]" />
+                <MudCheckBox @bind-Value="@_createNew">
+                    @Localizer["ConfirmTariffDeactivationAddNew"]
+                </MudCheckBox>
                 @if (_errorMessage != null)
                 {
                     <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
@@ -17,8 +24,12 @@
             </MudStack>
         </DialogContent>
         <DialogActions>
-            <MudButton OnClick="Cancel">Скасувати</MudButton>
-            <MudButton Color="@Color.Warning" Variant="Variant.Filled" OnClick="Submit">Деактивувати</MudButton>
+            <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
+            <MudButton Color="@Color.Warning"
+                       Variant="Variant.Filled"
+                       OnClick="Submit">
+                @Localizer["Disable"]
+            </MudButton>
         </DialogActions>
     </MudDialog>
 }

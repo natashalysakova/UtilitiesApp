@@ -1,21 +1,22 @@
 ﻿@using Web.NavigationServices
 
 @inject CheckCalculateService Service
+@inject ILocalizationService Localizer
 
 @if (_filtered is not null && _filtered.Any())
 {
-    <MudText Typo="Typo.h6">Не фіксовані платежі</MudText>
+    <MudText Typo="Typo.h6">@Localizer["NotFixedPayments"]</MudText>
     <MudDataGrid Items="@_filtered" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
                   SortMode="SortMode.None" >
         <Columns>
-            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="Послуга" Editable="false" />
-            <PropertyColumn Property="x=>x.Cost" Format="C" Title="Сума" Editable="true" CellClass="visible-input" HeaderClass="visible-input">
+            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="@Localizer["Service"]" Editable="false" />
+            <PropertyColumn Property="x=>x.Cost" Format="C" Title="@Localizer["Cost"]" Editable="true" CellClass="visible-input" HeaderClass="visible-input">
                 <EditTemplate>
                     <MudNumericField @bind-Value="context.Item.Cost"
                                      Culture="@_culture" Format="N2"
                                      HideSpinButtons="true"
                                      Adornment="Adornment.End"
-                                     AdornmentText="@($"{_culture.NumberFormat.CurrencySymbol}/місяць")"
+                                     AdornmentText="@($"{_culture.NumberFormat.CurrencySymbol}/{Localizer["Month"].ToString().ToLower()}")"
                                      TextChanged="@(()=>{ CommittedItemChanges(context.Item);})"></MudNumericField>
                 </EditTemplate>
             </PropertyColumn>

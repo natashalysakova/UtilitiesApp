@@ -1,16 +1,17 @@
 ﻿@using Web.NavigationServices
 
 @inject CheckCalculateService Service
+@inject ILocalizationService Localizer
 
 @if (_filtered is not null && _filtered.Any())
 {
-    <MudText Typo="Typo.h6">Додаткові фіксовані платежі</MudText>
+    <MudText Typo="Typo.h6">@Localizer["AdditionalFixedPayments"]</MudText>
 
     <MudDataGrid Items="@_filtered" Bordered="true" Dense="true"
                  SortMode="SortMode.None">
         <Columns>
-            <PropertyColumn Property="x=>x.Tariff.FixedPayName" StickyLeft="true" Title="Послуга" Editable="false" />
-            <PropertyColumn Format="C" Property="x=>x.Tariff.FixedPay" Editable="false" Title="Ціна" />
+            <PropertyColumn Property="x=>x.Tariff.FixedPayName" StickyLeft="true" Title="@Localizer["Service"]" Editable="false" />
+            <PropertyColumn Format="C" Property="x=>x.Tariff.FixedPay" Editable="false" Title="@Localizer["Сost"]" />
         </Columns>
     </MudDataGrid>
 }

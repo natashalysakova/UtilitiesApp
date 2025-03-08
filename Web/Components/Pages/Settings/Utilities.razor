@@ -4,10 +4,11 @@
 @inject ApiClient ApiClient
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ILocalizationService Localizer
 
 <MudGrid Spacing="4">
     <MudItem xs="12" Class="mt-4">
-        <MudButton @onclick="@(ShowCreateDialog)" Variant="Variant.Filled" Color="Color.Primary">Додати послугу</MudButton>
+        <MudButton @onclick="@(ShowCreateDialog)" Variant="Variant.Filled" Color="Color.Primary">@Localizer["AddService"]</MudButton>
     </MudItem>
     <MudItem xs="12">
         @if (_errorMessage != null)
@@ -56,7 +57,7 @@
 {
     { x=>x.UtilityId, utility.Id }
 };
-        var dialog = await DialogService.ShowAsync<AddUtilityDialog>("Створити послугу", parameters, options);
+        var dialog = await DialogService.ShowAsync<AddUtilityDialog>(Localizer["AddService"], parameters, options);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -68,7 +69,7 @@
     private async Task ShowCreateDialog()
     {
         var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Large, Position = DialogPosition.TopCenter };
-        var dialog = await DialogService.ShowAsync<AddUtilityDialog>("Створити послугу", options);
+        var dialog = await DialogService.ShowAsync<AddUtilityDialog>(Localizer["AddService"], options);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -81,14 +82,14 @@
     {
         var parameters = new DialogParameters<SimpleDialog_Template>
 {
-    { x => x.ContentText, "Ви дійсно хочете видалити цю послугу? Усі тарифи, та чеки, які її використовують, будуть видалені. Цю дію неможливо відмінити." },
-    { x => x.ButtonText, "Видалити" },
+    { x => x.ContentText, Localizer["UtilitiesDeleteConfirmation"] },
+    { x => x.ButtonText, Localizer["Delete"] },
     { x => x.Color, Color.Error }
 };
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
 
-        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Видалити", parameters, options);
+        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>(Localizer["Delete"], parameters, options);
         var result = await dialog.Result;
 
 
@@ -97,13 +98,13 @@
             try
             {
                 await ApiClient.Utilities_DeleteAsync(utility.Id);
-                this.Snackbar.Add($"Послуга {utility.Name} видалена", Severity.Success);
+                this.Snackbar.Add(Localizer["UtilitiesDeleteOk", utility.Name], Severity.Success);
 
                 await ReloadUtilities();
             }
             catch (ApiException ex)
             {
-                this.Snackbar.Add($"Помилка при видаленні {utility.Name}. {ex.Message}", Severity.Error);
+                this.Snackbar.Add(Localizer["UtilitiesDeleteError", utility.Name, ex.Message], Severity.Error);
             }
         }
     }

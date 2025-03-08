@@ -1,6 +1,6 @@
 ﻿@inject ApiClient ApiClient
 @inject ISnackbar Snackbar
-
+@inject ILocalizationService Localizer
 @if (Model is not null)
 {
     <EditForm Model="@Model" OnValidSubmit="CreateUpdateTariff" Context="editContext">
@@ -12,7 +12,7 @@
                 }
                 else
                 {
-                    <MudText Typo="Typo.h4">Додати тариф</MudText>
+                    <MudText Typo="Typo.h4">@Localizer["AddTariff"]</MudText>
                 }
             </TitleContent>
 
@@ -21,7 +21,7 @@
                 <MudStack>
                     @if (_utilityTypes != null)
                     {
-                        <MudSelect T="Guid" @bind-Value="@Model.UtilityGroupId" Placeholder="Оберіть послугу" ToStringFunc="@_convertToString">
+                        <MudSelect T="Guid" @bind-Value="@Model.UtilityGroupId" Placeholder="@Localizer["SelectService"]" ToStringFunc="@_convertToString">
                             @foreach (var item in _utilityTypes)
                             {
                                 <MudSelectItem Value="@item.Id" />
@@ -30,13 +30,13 @@
                     }
                     @if (_loadingError)
                     {
-                        <MudText>В системі не знайдено будинку за замовчанням. Створіть або оберіть його в налаштуваннях і спробуйте знову.</MudText>
-                        <MudButton Href="/settings/homes" Variant="Variant.Filled" Color="Color.Primary">Перейти до налаштувань</MudButton>
+                        <MudText>@Localizer["NoDefaultHome"]</MudText>
+                        <MudButton Href="/settings/homes" Variant="Variant.Filled" Color="Color.Primary">@Localizer["GoToSettings"]</MudButton>
                     }
                     else if (_households is not null)
                     {
 
-                        <MudSelect @bind-Value="@Model.HomeId" Label="Домівка">
+                        <MudSelect @bind-Value="@Model.HomeId" Label="@Localizer["Home"]">
                             @foreach (var house in _households)
                             {
                                 <MudSelectItem Value="house.Id">@house.Name</MudSelectItem>
@@ -45,8 +45,8 @@
                     }
 
                     <MudStack Row="true">
-                        <MudDatePicker @bind-Date="@Model.StartDate" Context="picker1" Label="Дата початку" AdornmentColor="Color.Primary" />
-                        @*                         <MudDatePicker @bind-Date="@Model.EndDate" For="@(()=> Model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="Дата кінця"/>
+                        <MudDatePicker @bind-Date="@Model.StartDate" Context="picker1" Label="@Localizer["StartDate"]" AdornmentColor="Color.Primary" />
+                        @*                         <MudDatePicker @bind-Date="@Model.EndDate" For="@(()=> Model.EndDate)" AdornmentColor="Color.Primary" Context="picker2" Label="@Localizer["EndDate"]"/>
                          <MudButton OnClick="(()=>Model.EndDate = null)" Size="Size.Small" Color="Color.Error"
                                                              Style="margin-top:auto; height: 32px;"><i class="fa-solid fa-broom"></i></MudButton>*@
 
@@ -54,52 +54,44 @@
 
 
                     <MudText Typo="Typo.body1">
-                        Оберіть тип тарифу
+                        @Localizer["SelectTariffType"]
                     </MudText>
                     <MudToggleGroup @bind-Value="@Model.TariffType" Color="Color.Primary" FixedContent
-                                    SelectionMode="SelectionMode.SingleSelection" Size="Size.Medium">
+                    SelectionMode="SelectionMode.SingleSelection" Size="Size.Medium">
                         <ChildContent>
-                            <MudToggleItem Value="TariffType.Meters">
-                                <MudTooltip Text="Сума залежить від показників лічільника">
-                                    Лічильник
-                                </MudTooltip>
-                            </MudToggleItem>
-                            <MudToggleItem Value="TariffType.Volume">
-                                <MudTooltip Text="Сума залежить від обсягу спожитої послуги, без введення показників лічільника">
-                                    За обсягом
-                                </MudTooltip>
-                            </MudToggleItem>
-                            <MudToggleItem Value="TariffType.Fixed">
-                                <MudTooltip Text="Фіксована сума кожен місяць">
-                                    Фіксований
-                                </MudTooltip>
-                            </MudToggleItem>
-                            <MudToggleItem Value="TariffType.NotFixedPayment">
-                                <MudTooltip Text="Довільна сума кожен місяць">
-                                    Не фіксований
-                                </MudTooltip>
-                            </MudToggleItem>
-                            <MudToggleItem Value="TariffType.HouseHoldArea">
-                                <MudTooltip Text="Сума залежить від площі помешкання">
-                                    За площею
-                                </MudTooltip>
-                            </MudToggleItem>
+
+                            @foreach (var type in Enum.GetValues<TariffType>())
+                            {
+                                <MudToggleItem Value="type">
+                                    <MudTooltip Text="@Localizer[$"TariffType.{type}.Tooltip"]">
+                                        @Localizer[$"TariffType.{type}"]
+                                    </MudTooltip>
+                                </MudToggleItem>
+                            }
                         </ChildContent>
                     </MudToggleGroup>
 
                     @if (Model.TariffType != TariffType.NotFixedPayment)
                     {
                         <MudNumericField @bind-Value="@Model.Cost"
-                                         For="@(()=> Model.Cost)" Culture="@_culture"
-                                         Format="0.00##" Label="Ціна" HideSpinButtons="true"
-                                         AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
-                                         Adornment="Adornment.Start" AdornmentColor="Color.Primary" />
+                        For="@(()=> Model.Cost)"
+                        Culture="@_culture"
+                        Format="0.00##"
+                        Label="@Localizer["Cost"]"
+                        HideSpinButtons="true"
+                        AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                        Adornment="Adornment.Start"
+                        AdornmentColor="Color.Primary" />
                     }
 
                     @if (Model.TariffType is TariffType.Meters or TariffType.Volume)
                     {
-                        <MudTextField @bind-Value="@Model.Units" For="@(()=> Model.Units)" Label="Одиниці вимірювання" />
-                        <MudSwitch @bind-Value="@Model.UseLimits" Label="Використовувати ліміти" Color="Color.Primary" />
+                        <MudTextField @bind-Value="@Model.Units"
+                        For="@(()=> Model.Units)"
+                        Label="@Localizer["Units"]" />
+                        <MudSwitch @bind-Value="@Model.UseLimits"
+                        Label="@Localizer["UseLimits"]"
+                        Color="Color.Primary" />
                     }
 
                     @if (Model is { TariffType: TariffType.Meters or TariffType.Volume, UseLimits: true })
@@ -108,65 +100,74 @@
                             @foreach (var item in Model.Limits)
                             {
                                 <MudStack Row="true">
-                                    <MudNumericField Format=".##" @bind-Value="@item.Limit" Label="Верхній ліміт"
-                                                     Variant="Variant.Filled" Margin="Margin.Dense"
-                                                     AdornmentText="@Model.Units"
-                                                     Adornment="Adornment.End" AdornmentColor="Color.Primary" />
+                                    <MudNumericField Format=".##" @bind-Value="@item.Limit"
+                                    Label="@Localizer["UpperLimit"]"
+                                    Variant="Variant.Filled" Margin="Margin.Dense"
+                                    AdornmentText="@Model.Units"
+                                    Adornment="Adornment.End" AdornmentColor="Color.Primary" />
                                     <MudNumericField Format="0.00##" @bind-Value="@item.CostAfterLimit"
-                                                     Label="Ціна вище ліміту"
-                                                     AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
-                                                     Adornment="Adornment.Start" AdornmentColor="Color.Primary"
-                                                     Variant="Variant.Filled" Margin="Margin.Dense" />
+                                    Label="@Localizer["PriceOverLimit"]"
+                                    AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                    Adornment="Adornment.Start" AdornmentColor="Color.Primary"
+                                    Variant="Variant.Filled" Margin="Margin.Dense" />
                                     @if (Model.Limits.Count > 1)
                                     {
                                         <MudIconButton Icon="fa fa-trash"
-                                                       Color="Color.Error"
-                                                       OnClick="(()=> DeleteLimit(item))" />
+                                        Color="Color.Error"
+                                        OnClick="(()=> DeleteLimit(item))" />
                                     }
                                     else
                                     {
                                         <MudIconButton Icon="fa fa-trash"
-                                                       Color="Color.Default" />
+                                        Color="Color.Default" />
                                     }
                                 </MudStack>
                             }
-                            <MudIconButton Class="align-content-center" Icon="fa fa-plus" Color="Color.Tertiary" OnClick="AddLimit"></MudIconButton>
+                            <MudIconButton Class="align-content-center"
+                            Icon="fa fa-plus"
+                            Color="Color.Tertiary"
+                            OnClick="AddLimit"></MudIconButton>
                         </MudPaper>
                     }
 
                     @if (Model.TariffType is TariffType.Meters or TariffType.Meters)
                     {
-                        var lable = $"Додатковий платіж за {(string.IsNullOrWhiteSpace(Model.Units) ? "одиницю виміру" : Model.Units)}";
+                        var lable = Localizer["UseAdditionalFeeLabel", (string.IsNullOrWhiteSpace(Model.Units) ? Localizer["ForUnit"] : Model.Units)];
                         <MudSwitch @bind-Value="@Model.UseAdditionalFee" Label="@lable" Color="Color.Primary" />
 
                         @if (Model.UseAdditionalFee)
                         {
                             <MudStack Row="true">
-                                <MudTextField @bind-Value="@Model.AdditionalFeeName" Label="Назва додаткового платежу"
-                                              Variant="Variant.Filled" Margin="Margin.Dense"
-                                              AdornmentText="@Model.Units" AdornmentColor="Color.Primary" />
-                                <MudNumericField Format="0.00##" @bind-Value="@Model.AdditionalFeeCost" Label="Вартість"
-                                                 AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
-                                                 Adornment="Adornment.Start" AdornmentColor="Color.Primary"
-                                                 Variant="Variant.Filled" Margin="Margin.Dense"></MudNumericField>
+                                <MudTextField @bind-Value="@Model.AdditionalFeeName"
+                                Label="@Localizer["AdditionalFeeName"]"
+                                Variant="Variant.Filled" Margin="Margin.Dense"
+                                AdornmentText="@Model.Units" AdornmentColor="Color.Primary" />
+                                <MudNumericField @bind-Value="@Model.AdditionalFeeCost"
+                                Format="0.00##"
+                                Label="@Localizer["Cost"]"
+                                AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                Adornment="Adornment.Start" AdornmentColor="Color.Primary"
+                                Variant="Variant.Filled" Margin="Margin.Dense"></MudNumericField>
                             </MudStack>
                         }
                     }
 
                     @if (Model.TariffType is not TariffType.Fixed)
                     {
-                        <MudSwitch @bind-Value="@Model.UseFixedPay" Label="Додатковий фіксований платіж" Color="Color.Primary" />
+                        <MudSwitch @bind-Value="@Model.UseFixedPay" Label="@Localizer["UseFixedPayLabel"]" Color="Color.Primary" />
 
                         @if (Model.UseFixedPay)
                         {
                             <MudStack Row="true">
                                 <MudTextField @bind-Value="@Model.FixedPayName"
-                                              Label="Назва фіксованого платежу"
-                                              Variant="Variant.Filled" Margin="Margin.Dense"
-                                              AdornmentText="@Model.Units"></MudTextField>
-                                <MudNumericField Format="0.00##" @bind-Value="@Model.FixedPay" Label="Вартість"
-                                                 AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
-                                                 Adornment="Adornment.Start" AdornmentColor="Color.Primary" Variant="Variant.Filled" Margin="Margin.Dense"></MudNumericField>
+                                Label="@Localizer["FixedPayName"]"
+                                Variant="Variant.Filled" Margin="Margin.Dense"
+                                AdornmentText="@Model.Units"></MudTextField>
+                                <MudNumericField Format="0.00##" @bind-Value="@Model.FixedPay"
+                                Label="@Localizer["Cost"]"
+                                AdornmentText="@NumberFormatInfo.CurrentInfo.CurrencySymbol"
+                                Adornment="Adornment.Start" AdornmentColor="Color.Primary"
+                                Variant="Variant.Filled" Margin="Margin.Dense"></MudNumericField>
                             </MudStack>
 
                         }
@@ -175,7 +176,7 @@
                     @if (_displayAlert)
                     {
                         <MudPaper Class="pa-4">
-                            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                            <MudText Typo="Typo.subtitle2">@Localizer["Error"]</MudText>
                             <MudText Color="@Color.Error">
                                 <ValidationSummary />
                                 @if (_validationResult is not null)
@@ -200,16 +201,9 @@
 
             </DialogContent>
             <DialogActions>
-                <MudButton OnClick="Cancel">Відміна</MudButton>
+                <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
                 <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit">
-                    @if (IsEditMode)
-                    {
-                        <span>Обновити</span>
-                    }
-                    else
-                    {
-                        <span>Створити</span>
-                    }
+                    <span>@Localizer[IsEditMode ? "Update" : "Create"]</span>
                 </MudButton>
             </DialogActions>
         </MudDialog>
@@ -237,7 +231,7 @@
 
     private bool IsEditMode { get; set; }
 
-    private static ICollection<UtilityGroupViewModel>? _utilityTypes;
+    private ICollection<UtilityGroupViewModel>? _utilityTypes;
     private ICollection<HomeViewDto>? _households;
 
     private CultureInfo _culture = CultureInfo.CurrentCulture;
@@ -248,12 +242,8 @@
 
     bool _loadingError = false;
 
-    protected override async void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        var task = ApiClient.Home_GetAllAsync();
-        task.Wait();
-        _households = task.Result;
-
         if (Reference != null)
         {
             Model = new TariffEditDto()
@@ -316,7 +306,11 @@
             Model = await ApiClient.Tariffs_GetForEditAsync(TariffId.Value);
             StateHasChanged();
         }
+    }
 
+    protected override async Task OnInitializedAsync()
+    {
+        _households = await ApiClient.Home_GetAllAsync();
         _utilityTypes = await ApiClient.Utilities_GetAllAsync();
     }
 
@@ -329,16 +323,11 @@
         try
         {
             var result = await ApiClient.Tariffs_PutAsync(Model!.Id, Model);
-
-            if (IsEditMode)
-            {
-                Snackbar.Add($"Тариф {result.UtilityGroupName} оновлено", Severity.Success);
-            }
-            else
-            {
-                Snackbar.Add($"Тариф {result.UtilityGroupName} створено", Severity.Success);
-            }
-
+            var message = IsEditMode ?
+                "TariffUpdatedOk" :
+                "TariffAddedOk";
+            
+            Snackbar.Add(Localizer[message, result.UtilityGroupName], Severity.Success);
             MudDialog.Close(DialogResult.Ok(result));
         }
         catch (ApiException<ValidationResult> ex)
@@ -378,8 +367,8 @@
         return _utilityTypes.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
     }
 
-    Func<Guid, string> _convertToString = new Func<Guid, string>((id) =>
+    string _convertToString (Guid id)
     {
-        return _utilityTypes?.SingleOrDefault(x => x.Id == id)?.Name ?? "ОБЕРІТЬ ПОСЛУГУ";
-    });
+        return _utilityTypes?.SingleOrDefault(x => x.Id == id)?.Name ?? Localizer["SelectService"];
+    }
 }

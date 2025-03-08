@@ -1,12 +1,14 @@
 ﻿@using ApexCharts;
 
+@inject ILocalizationService Localizer
+
 @if (Checks is null || !Checks.Any())
 {
     return;
 }
 
 @{
-    var title = $"Споживання за обсягом спожитого за " + (SelectedYear == 0 ? "усі роки" : SelectedYear + " рік");
+    var title = SelectedYear == 0 ? Localizer["VolumeByAllYears"] : Localizer["VolumeByYear", SelectedYear];
 }
 
 <ApexChart TItem="IGrouping<DateTime, CheckViewDto>" @ref="_chart1" Title="@title" Options="@_options">

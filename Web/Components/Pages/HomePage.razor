@@ -7,12 +7,14 @@
 @using Web.Components.Pages.Statistics.ByYear
 @using Web.Extensions
 
-@inject ApiClient ApiClient;
-@inject NavigationManager NavigationManager;
+@inject ApiClient ApiClient
+@inject NavigationManager NavigationManager
+@inject ILocalizationService Localizer
 
 @if (_nothingFound)
 {
-    <p>@_noHomes</p>
+    <p>@Localizer["NoHomes"]</p>
+    <MudButton Href="/settings/homes" Variant="Variant.Outlined" Color="Color.Warning">@Localizer["GoToSettings"]</MudButton>
 }
 
 @if (_model == null)
@@ -70,18 +72,18 @@ else
                 @if (_model.Tariffs.Any())
                 {
                     var tariffs = _model.Tariffs.CurrentlyActive();
-                    <MudText Typo="Typo.h6">Тарифи на сьогодні</MudText>
+                    <MudText Typo="Typo.h6">@Localizer["TodaysTariffs"]</MudText>
                     <CompactTariffTable Model="tariffs" ShowDateColumn="false"></CompactTariffTable>
-                    <MudButton Href="@url" Variant="Variant.Filled">Тарифи</MudButton>
+                    <MudButton Href="@url" Variant="Variant.Filled">@Localizer["Tariffs"]</MudButton>
                 }
                 else
                 {
                     <MudAlert Severity="Severity.Warning">
                         <MudStack>
                             <MudText Align="Align.Center">
-                                У цьому домогосподарстві нема жодного тарифу. Для того, щоб почати роботу, додайте тарифи в налаштуваннях.
+                                @Localizer["NoTariffs"]
                             </MudText>
-                            <MudButton Href="@url" Variant="Variant.Outlined" Color="Color.Warning">Перейти до налаштувань</MudButton>
+                            <MudButton Href="@url" Variant="Variant.Outlined" Color="Color.Warning">@Localizer["GoToSettings"]</MudButton>
                         </MudStack>
                     </MudAlert>
                 }
@@ -101,7 +103,7 @@ else
                 {
                     var url = $"/home/{_model.Id}/checks/add";
                     <MudButton FullWidth=true Href="@url"
-                               Variant="Variant.Filled" Color="Color.Primary">Створити чек</MudButton>
+                               Variant="Variant.Filled" Color="Color.Primary">@Localizer["AddCheck"]</MudButton>
                 }
 
                 @if (_model.Checks.Any())
@@ -111,8 +113,8 @@ else
                               Filter="new Func<CheckViewDto,bool>(FilterFunc)" Height="510px" OnRowClick="RowClickEvent">
                         <HeaderContent>
                             <MudTh></MudTh>
-                            <MudTh><MudTableSortLabel Enabled="true" SortBy="new Func<CheckViewDto, object>(x=>x.Date)">Дата</MudTableSortLabel></MudTh>
-                            <MudTh colspan="2">Сума</MudTh>
+                            <MudTh><MudTableSortLabel Enabled="true" SortBy="new Func<CheckViewDto, object>(x=>x.Date)">@Localizer["Date"]</MudTableSortLabel></MudTh>
+                            <MudTh colspan="2">@Localizer["Sum"]</MudTh>
 
                         </HeaderContent>
                         <RowTemplate>
@@ -120,15 +122,15 @@ else
                                 var viewUrl = $"/home/{_model.Id}/checks/{context.Id}";
                             }
                             <MudTh><MudIconButton Size="Size.Small" Href="@viewUrl" Icon="fa-solid fa-eye"></MudIconButton></MudTh>
-                            <MudTd DataLabel="Дата">@context.Date.ToString("d")</MudTd>
-                            <MudTd DataLabel="Сума">@context.Amount.ToString("C")</MudTd>
+                            <MudTd DataLabel="@Localizer["Date"]">@context.Date.ToString("d")</MudTd>
+                            <MudTd DataLabel="@Localizer["Sum"]">@context.Amount.ToString("C")</MudTd>
                             @*                             @{
                                 var editUrl = $"{viewUrl}/edit";
                             }
                             <MudTd> <MudIconButton Size="Size.Small" Href="@editUrl" Icon="fa-solid fa-edit"></MudIconButton> </MudTd>
  *@                        </RowTemplate>
                         <PagerContent>
-                            <MudTablePager PageSizeOptions="@options" HidePageNumber="true" HidePagination="true" RowsPerPageString="Показати:" />
+                            <MudTablePager PageSizeOptions="@options" HidePageNumber="true" HidePagination="true" RowsPerPageString="@Localizer["PerPage"]" />
                         </PagerContent>
                     </MudTable>
                 }
@@ -140,7 +142,7 @@ else
     @if (_model != null && _model.Checks.Any())
     {
         <MudItem xs="12">
-            <MudText Typo="Typo.h6">Статистика</MudText>
+            <MudText Typo="Typo.h6">@Localizer["Statistics"]</MudText>
         </MudItem>
         <MudItem xs="12" md="6">
             <MudPaper>
@@ -163,7 +165,6 @@ else
     [Parameter]
     public string? Id { get; set; }
 
-    private string? _noHomes = "No homes found. Please check Settings";
     bool _nothingFound = false;
 
     private bool FilterFunc(CheckViewDto check)

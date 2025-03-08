@@ -5,17 +5,18 @@
 @inject MenuUpdateService NavigationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ILocalizationService Localizer
 
 <MudGrid Spacing="4">
     <MudItem xs="12" Class="mt-4">
-        <MudButton @onclick="ShowCreateDialog" Variant="Variant.Filled" Color="Color.Primary">Нова домівка</MudButton>
+        <MudButton @onclick="ShowCreateDialog" Variant="Variant.Filled" Color="Color.Primary">@Localizer["AddHome"]</MudButton>
     </MudItem>
 
     @if (_homes is null)
-{
-for (int i = 0; i < 3; i++)
-{
-    <MudCard>
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            <MudCard>
                 <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
                 <MudCardContent>
                     <MudSkeleton Width="30%" Height="42px;" />
@@ -27,170 +28,168 @@ for (int i = 0; i < 3; i++)
                     <MudSkeleton Width="105px" Height="40px" Class="ml-3" />
                 </MudCardActions>
             </MudCard>
-}
-}
-else
-{
-
-    @foreach (var home in _homes)
-{
-    <MudItem xs="12" md="6">
+        }
+    }
+    else
+    {
+        @foreach (var home in _homes)
+        {
+            <MudItem xs="12" md="6">
                 <MudCard>
                     <MudCardHeader>
                         <CardHeaderContent>
                             @{
-                        string icon = "fa-solid fa-house";
-                        Color color = Color.Default;
-                        if (home.IsDefault)
-                        {
-                            icon = "fa-solid fa-house-user";
-                            color = Color.Success;
-                        }
-                        var url = $"home/{home.Id}/tariffs";
-                    }
+                                string icon = "fa-solid fa-house";
+                                Color color = Color.Default;
+                                if (home.IsDefault)
+                                {
+                                    icon = "fa-solid fa-house-user";
+                                    color = Color.Success;
+                                }
+                                var url = $"home/{home.Id}/tariffs";
+                            }
                             <MudStack Row="true">
                                 <MudIcon Icon="@icon" Style="font-size:1.5rem;" Color="@color" />
                                 <MudText Typo="Typo.h6">@home.Name</MudText>
                                 <MudSpacer></MudSpacer>
-                                <MudButton Href="@url" Variant="Variant.Filled">Тарифи</MudButton>
-
+                                <MudButton Href="@url" Variant="Variant.Filled">@Localizer["Tariffs"]</MudButton>
                             </MudStack>
-                            <MudText Inline="true">(@home.Area.ToString(".00") М<sup>2</sup>)</MudText>
-
+                            <MudText Inline="true">(@home.Area.ToString(".00") @Localizer["Sqm"])</MudText>
                         </CardHeaderContent>
-                        <CardHeaderActions>
-
-                        </CardHeaderActions>
                     </MudCardHeader>
                     <MudCardContent>
                         <MudText>
-                            @home.Street @home.Building @home.Apartment <br />
+                            @{
+                                var apt = home.Apartment is not null ? $"{Localizer["Apartment"]} {home.Apartment}" : string.Empty;
+                            }
+                            @home.Street @Localizer["Building"] @home.Building @apt
+                            <br />
                             @home.City, @home.Region <br />
                             @home.Country <br />
                         </MudText>
                     </MudCardContent>
                     <MudCardActions>
-                        <MudTooltip Text="Видалити">
+                        <MudTooltip Text="@Localizer["Delete"]">
                             <MudIconButton Icon="fa fa-trash" Color="Color.Error" OnClick="(()=>ShowDeleteModal(home))"></MudIconButton>
                         </MudTooltip>
                         <MudSpacer />
                         @if (!home.IsDefault)
-                {
-                    <MudTooltip Text="За замовчанням">
+                        {
+                            <MudTooltip Text="@Localizer["IsDefault"]">
                                 <MudIconButton Icon="fa fa-house-user" OnClick="(()=>ShowSetAsDefaultModal(home))" Color="Color.Success"></MudIconButton>
                             </MudTooltip>
-                }
-                        <MudTooltip Text="Редагувати">
+                        }
+                        <MudTooltip Text="@Localizer["Edit"]">
                             <MudIconButton Icon="fa fa-edit" OnClick="(()=>ShowEditDialog(home))" Color="Color.Default" />
                         </MudTooltip>
 
                     </MudCardActions>
                 </MudCard>
             </MudItem>
-}
-}
+        }
+    }
 </MudGrid>
 
 
 
 @code {
 
-private ICollection<HomeViewDto>? _homes;
+    private ICollection<HomeViewDto>? _homes;
 
-protected override async Task OnInitializedAsync()
-{
-_homes = await ApiClient.Home_GetAllAsync();
-}
+    protected override async Task OnInitializedAsync()
+    {
+        _homes = await ApiClient.Home_GetAllAsync();
+    }
 
-private async Task ShowCreateDialog()
-{
-var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Medium };
-var dialog = await DialogService.ShowAsync<AddHomeDialog>("Add Home", options);
-var result = await dialog.Result;
+    private async Task ShowCreateDialog()
+    {
+        var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Medium };
+        var dialog = await DialogService.ShowAsync<AddHomeDialog>(Localizer["AddHome"], options);
+        var result = await dialog.Result;
 
-if (result != null && !result.Canceled)
-{
-    await RefreshList();
-}
-}
+        if (result != null && !result.Canceled)
+        {
+            await RefreshList();
+        }
+    }
 
-private async Task ShowEditDialog(HomeViewDto home)
-{
-var parameters = new DialogParameters<AddHomeDialog> { { x => x.HomeId, home.Id } };
-var options = new DialogOptions() { BackdropClick = false };
-var dialog = await DialogService.ShowAsync<AddHomeDialog>(home.Name, parameters, options);
-var result = await dialog.Result;
+    private async Task ShowEditDialog(HomeViewDto home)
+    {
+        var parameters = new DialogParameters<AddHomeDialog> { { x => x.HomeId, home.Id } };
+        var options = new DialogOptions() { BackdropClick = false };
+        var dialog = await DialogService.ShowAsync<AddHomeDialog>(home.Name, parameters, options);
+        var result = await dialog.Result;
 
-if (result is not null or { Canceled: true })
-{
-    await RefreshList();
-}
-}
+        if (result is not null or { Canceled: true })
+        {
+            await RefreshList();
+        }
+    }
 
-private async Task ShowDeleteModal(HomeViewDto type)
+    private async Task ShowDeleteModal(HomeViewDto type)
+    {
+        var parameters = new DialogParameters<SimpleDialog_Template>
 {
-var parameters = new DialogParameters<SimpleDialog_Template>
-{
-    { x => x.ContentText, "Do you really want to delete this house? All related tariffs and checks will be deleted as well. This process cannot be undone." },
-    { x => x.ButtonText, "Delete" },
+    { x => x.ContentText, Localizer["DeleteHomeConfirmation"] },
+    { x => x.ButtonText, Localizer["Delete"] },
     { x => x.Color, Color.Error }
 };
 
-var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
 
-var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Delete", parameters, options);
-var result = await dialog.Result;
+        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>(Localizer["Delete"], parameters, options);
+        var result = await dialog.Result;
 
 
-if (result != null && !result.Canceled)
-{
-    try
-    {
-        await ApiClient.Home_DeleteAsync(type.Id);
-        this.Snackbar.Add($"Home {type.Name} deleted", Severity.Success);
-        await RefreshList();
-    }
-    catch (ApiException ex)
-    {
-        this.Snackbar.Add($"Failed to delete home {type.Name}. {ex.Message}", Severity.Error);
-    }
-}
-}
-
-private async Task ShowSetAsDefaultModal(HomeViewDto type)
-{
-var parameters = new DialogParameters<SimpleDialog_Template>
-{
-    { x => x.ContentText, $"Are you sure you want to set {type.Name} as your default home?" },
-    { x => x.ButtonText, "Set as Default" },
-    { x => x.Color, Color.Warning }
-};
-
-var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
-
-var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Set as default", parameters, options);
-var result = await dialog.Result;
-
-if (result is not null or { Canceled: true })
-{
-    try
-    {
-        await ApiClient.Home_PostSetDefaultActionAsync(type.Id);
-        this.Snackbar.Add($"Home {type.Name} was set as default", Severity.Success);
-        await RefreshList();
-    }
-    catch (ApiException ex)
-    {
-        this.Snackbar.Add($"Failed to set home {type.Name} as default. {ex.Message}", Severity.Error);
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                await ApiClient.Home_DeleteAsync(type.Id);
+                this.Snackbar.Add(Localizer["HomeDeletedOk", type.Name], Severity.Success);
+                await RefreshList();
+            }
+            catch (ApiException ex)
+            {
+                this.Snackbar.Add(Localizer["HomeDeletedError", type.Name, ex.Message], Severity.Error);
+            }
+        }
     }
 
+    private async Task ShowSetAsDefaultModal(HomeViewDto type)
+    {
+        var parameters = new DialogParameters<SimpleDialog_Template>
+        {
+            { x => x.ContentText, Localizer["HomeSetAsDefaultConfirmation", type.Name] },
+            { x => x.ButtonText, Localizer["HomeSetAsDefault"] },
+            { x => x.Color, Color.Warning }
+        };
 
-}
-}
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
 
-private async Task RefreshList()
-{
-_homes = await ApiClient.Home_GetAllAsync();
-NavigationService.HomesUpdated();
-}
+        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>(Localizer["HomeSetAsDefault"], parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null or { Canceled: true })
+        {
+            try
+            {
+                await ApiClient.Home_PostSetDefaultActionAsync(type.Id);
+                this.Snackbar.Add(Localizer["HomeSetAsDefaultOk", type.Name], Severity.Success);
+                await RefreshList();
+            }
+            catch (ApiException ex)
+            {
+                this.Snackbar.Add(Localizer["HomeSetAsDefaultError", type.Name, ex.Message], Severity.Error);
+            }
+
+
+        }
+    }
+
+    private async Task RefreshList()
+    {
+        _homes = await ApiClient.Home_GetAllAsync();
+        NavigationService.HomesUpdated();
+    }
 }

@@ -1,9 +1,11 @@
 ﻿@page "/settings"
 @page "/settings/general"
 
-<h3>Settings</h3>
+@inject ILocalizationService Localizer
 
-@* <Tabs>
+<h3>@Localizer["Settings"]</h3>
+@*
+ <Tabs>
     <Tab Title="General" Active="true">
         <Content>
             Some general settings be here

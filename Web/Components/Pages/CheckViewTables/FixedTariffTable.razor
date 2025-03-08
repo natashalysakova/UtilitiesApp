@@ -1,6 +1,7 @@
 ﻿@using Web.NavigationServices
 
 @inject CheckCalculateService Service
+@inject ILocalizationService Localizer
 
 @if (_filtered is not null && _filtered.Any())
 {
@@ -8,8 +9,8 @@
     <MudDataGrid Items="@_filtered" Bordered="true" Dense="true"
                   SortMode="SortMode.None" >
         <Columns>
-            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="Послуга" Editable="false" />
-            <PropertyColumn Property="x=>x.Cost" Format="C" Title="Сума" StickyRight="true" Editable="false" />
+            <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" StickyLeft="true" Title="@Localizer["Service"]" Editable="false" />
+            <PropertyColumn Property="x=>x.Cost" Format="C" Title="@Localizer["Cost"]" StickyRight="true" Editable="false" />
         </Columns>
     </MudDataGrid>
 }

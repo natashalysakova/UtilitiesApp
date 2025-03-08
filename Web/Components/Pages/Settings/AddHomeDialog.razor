@@ -1,72 +1,92 @@
 ﻿@inject ApiClient ApiClient
 @inject ISnackbar Snackbar
+@inject ILocalizationService Localizer
 
-@if(Model != null)
+@if (Model != null)
 {
-<EditForm Model="@Model" OnValidSubmit="CreateUpdateHome">
-    <MudDialog>
-        <TitleContent>
-            @if (IsEditMode)
-            {
-                <MudText Typo="Typo.h4">@Model.Name</MudText>
-            }
-            else
-            {
-                <MudText Typo="Typo.h4">Додати домівку</MudText>
-            }
-        </TitleContent>
-
-        <DialogContent>
-
-            <DataAnnotationsValidator />
-            <MudStack>
-
-                <MudTextField @bind-Value="@Model.Name" For="@(()=> Model.Name)" Label="Назва домівки"></MudTextField>
-                <MudNumericField @bind-Value="@Model.Area" Culture="@_culture" Format="N2" Label="Площа" HideSpinButtons="true" Adornment="Adornment.End" AdornmentText="кв.м"></MudNumericField>
-                <MudTextField @bind-Value="@Model.Country" For="@(()=> Model.Country)" Label="Країна"></MudTextField>
-                <MudTextField @bind-Value="@Model.Region" For="@(()=> Model.Region)" Label="Область"></MudTextField>
-                <MudTextField @bind-Value="@Model.City" For="@(()=> Model.City)" Label="Місто"></MudTextField>
-                <MudTextField @bind-Value="@Model.Street" For="@(()=> Model.Street)" Label="Вулиця"></MudTextField>
-                <MudTextField @bind-Value="@Model.Building" For="@(()=> Model.Building)" Label="Будинок"></MudTextField>
-                <MudTextField @bind-Value="@Model.Apartment" For="@(()=> Model.Apartment)" Label="Квартира"></MudTextField>
-                <MudCheckBox @bind-Value="@Model.IsDefault" Label="Домівка за замовчанням"></MudCheckBox>
-            </MudStack>
-
-            @if (_displayAlert)
-            {
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                    <MudText Color="@Color.Error">
-                        <ValidationSummary />
-                        @foreach (var item in _validationResult.ValidationErrors)
-                        {
-                            foreach (var field in item.Value)
-                            {
-                                @field
-                            }
-                        }
-                    </MudText>
-                </MudPaper>
-            }
-        </DialogContent>
-        <DialogActions>
-            <MudButton OnClick="Cancel">Відміна</MudButton>
-            <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit">
+    <EditForm Model="@Model" OnValidSubmit="CreateUpdateHome">
+        <MudDialog>
+            <TitleContent>
                 @if (IsEditMode)
                 {
-                    <span>Оновити</span>
+                    <MudText Typo="Typo.h4">@Model.Name</MudText>
                 }
                 else
                 {
-                    <span>Створити</span>
+                    <MudText Typo="Typo.h4">@Localizer["AddHome"]</MudText>
                 }
-            </MudButton>
-        </DialogActions>
-    </MudDialog>
-</EditForm>
+            </TitleContent>
+
+            <DialogContent>
+
+                <DataAnnotationsValidator />
+                <MudStack>
+
+                    <MudTextField @bind-Value="@Model.Name"
+                                  For="@(()=> Model.Name)"
+                                  Label="@Localizer["Name"]"></MudTextField>
+                    <MudNumericField @bind-Value="@Model.Area"
+                                     Culture="@_culture"
+                                     Format="N2"
+                                     Label="@Localizer["Area"]"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@Localizer["Sqm"]"></MudNumericField>
+                    <MudTextField @bind-Value="@Model.Country"
+                                  For="@(()=> Model.Country)"
+                                  Label="@Localizer["Country"]" />
+                    <MudTextField @bind-Value="@Model.Region"
+                                  For="@(()=> Model.Region)"
+                                  Label="@Localizer["Region"]" />
+                    <MudTextField @bind-Value="@Model.City"
+                                  For="@(()=> Model.City)"
+                                  Label="@Localizer["City"]" />
+                    <MudTextField @bind-Value="@Model.Street"
+                                  For="@(()=> Model.Street)"
+                                  Label="@Localizer["Street"]" />
+                    <MudTextField @bind-Value="@Model.Building"
+                                  For="@(()=> Model.Building)"
+                                  Label="@Localizer["Building"]" />
+                    <MudTextField @bind-Value="@Model.Apartment"
+                                  For="@(()=> Model.Apartment)"
+                                  Label="@Localizer["Apartment"]" />
+                    <MudCheckBox @bind-Value="@Model.IsDefault"
+                                 For="@(()=> Model.IsDefault)"
+                                 Label="@Localizer["IsDefault"]" />
+                </MudStack>
+
+                @if (_displayAlert)
+                {
+                    <MudPaper Class="pa-4">
+                        <MudText Typo="Typo.subtitle2">@Localizer["Error"]</MudText>
+                        <MudText Color="@Color.Error">
+                            <ValidationSummary />
+                            @if (_validationResult != null)
+                            {
+                                @foreach (var item in _validationResult.ValidationErrors)
+                                {
+                                    foreach (var field in item.Value)
+                                    {
+                                        @field
+                                    }
+                                }
+                            }
+                        </MudText>
+                    </MudPaper>
+                }
+            </DialogContent>
+            <DialogActions>
+                <MudButton OnClick="Cancel">Відміна</MudButton>
+                <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit">
+                    <span>@Localizer[IsEditMode ? "Update" : "Create"]</span>
+                </MudButton>
+            </DialogActions>
+        </MudDialog>
+    </EditForm>
 }
-else {
-    <MudProgressCircular Style="margin:64px;" Indeterminate="true"/>
+else
+{
+    <MudProgressCircular Style="margin:64px;" Indeterminate="true" />
 }
 
 @code {
@@ -107,16 +127,11 @@ else {
         try
         {
             var result = await ApiClient.Home_PutAsync(Model!.Id, Model);
+            string message = IsEditMode ?
+                "HomeUpdatedOk" :
+                "HomeAddOk";
 
-            if (IsEditMode)
-            {
-                Snackbar.Add($"Home {result.Name} updated sccsessfully", Severity.Success);
-            }
-            else
-            {
-                Snackbar.Add($"Home {result.Name} added", Severity.Success);
-            }
-
+            Snackbar.Add(Localizer[message, result.Name], Severity.Success);
             MudDialog.Close(DialogResult.Ok(result));
         }
         catch (ApiException<ValidationResult> ex)

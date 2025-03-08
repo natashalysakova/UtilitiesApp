@@ -6,15 +6,16 @@
 @inject ApiClient ApiClient
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ILocalizationService Localizer
 
 <style>
     .mud-table-cell-custom-group {
-        font-weight: 500;
+    font-weight: 500;
     }
 
     .mud-table-cell-custom-group-footer {
-        padding-bottom: 50px;
-        text-align: right;
+    padding-bottom: 50px;
+    text-align: right;
     }
 </style>
 
@@ -22,7 +23,7 @@
 
 <MudGrid Spacing="4">
     <MudItem xs="12" Class="mt-4">
-        <MudButton @onclick="@(()=>ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">Додати тариф</MudButton>
+        <MudButton @onclick="@(()=>ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">@Localizer["AddTariff"]</MudButton>
     </MudItem>
     <MudItem xs="12">
         @if (_errorMessage != null)
@@ -50,9 +51,16 @@
         else
         {
             <MudExpansionPanels>
-                <MudExpansionPanel Text="Активні" Expanded="true">
-                    <MudTable Class="mb-4" Items="_tariffs.CurrentlyActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinition"
-                              Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
+                <MudExpansionPanel Text="@Localizer["Active"]" Expanded="true">
+                    <MudTable Items="_tariffs.CurrentlyActive().OrderBy(x=>x.StartDate)"
+                    Class="mb-4"
+                    Hover="true"
+                    FixedHeader="true"
+                    GroupBy="_groupDefinition"
+                    Dense="true"
+                    Breakpoint="Breakpoint.Sm"
+                    HorizontalScrollbar="false"
+                    Elevation="0">
                         <ColGroup>
                             @if (_groupDefinition.Expandable)
                             {
@@ -69,10 +77,10 @@
                         </ColGroup>
                         <HeaderContent>
                             <MudTh></MudTh>
-                            <MudTh>Послуга</MudTh>
-                            <MudTh>Ціна</MudTh>
-                            <MudTh>Тип</MudTh>
-                            <MudTh>Діє з</MudTh>
+                            <MudTh>@Localizer["Service"]</MudTh>
+                            <MudTh>@Localizer["Price"]</MudTh>
+                            <MudTh>@Localizer["Type"]</MudTh>
+                            <MudTh>@Localizer["ActiveFrom"]</MudTh>
                             <MudTh></MudTh>
                         </HeaderContent>
                         <GroupHeaderTemplate>
@@ -80,45 +88,44 @@
                         </GroupHeaderTemplate>
                         <RowTemplate>
                             <MudTd>
-                                <MudTooltip Text="Редагувати">
+                                <MudTooltip Text="@Localizer["Edit"]">
                                     <MudIconButton Size="Size.Small" Icon="fa fa-edit" OnClick="(()=>ShowEditDialog(context))"></MudIconButton>
                                 </MudTooltip>
                             </MudTd>
-                            <MudTd DataLabel="Послуга">@context.UtilityGroupName</MudTd>
-                            <MudTd DataLabel="Ціна">@context.Cost.ToString("C")</MudTd>
-                            @{
-                                var type = context.TariffType switch
-                                {
-                                    TariffType.Fixed => "Фіксований",
-                                    TariffType.HouseHoldArea => "За площу",
-                                    TariffType.Meters => "Лічильник",
-                                    TariffType.Volume => "За обсягом",
-                                    TariffType.NotFixedPayment => "Не фіксований",
-                                    _ => string.Empty
-                                };
-                            }
-                            <MudTd DataLabel="Тип">@type</MudTd>
-                            <MudTd DataLabel="Діє">@context.StartDate.ToShortDateString() @context.EndDate?.ToShortDateString()</MudTd>
+                            <MudTd DataLabel="@Localizer["Service"]">@context.UtilityGroupName</MudTd>
+                            <MudTd DataLabel="@Localizer["Price"]">@context.Cost.ToString("C")</MudTd>
+                            <MudTd DataLabel="@Localizer["Type"]">@Localizer["TariffType." + context.TariffType.ToString()]</MudTd>
+                            <MudTd DataLabel="@Localizer["ActiveFrom"]">@context.StartDate.ToShortDateString() @context.EndDate?.ToShortDateString()</MudTd>
 
                             <MudTd>
-                                @*                                 <MudTooltip Text="Видалити">
+                                @*                                 <MudTooltip Text="@Localizer["Delete"]">
                                     <MudIconButton Size="Size.Small" Icon="fa fa-trash" Color="Color.Error"
                                                    OnClick="(()=>ShowDeleteModal(context))"></MudIconButton>
                                 </MudTooltip> *@
-                                <MudTooltip Text="Деактивувати">
+                                <MudTooltip Text="@Localizer["Disable"]">
                                     <MudIconButton Size="Size.Small" Icon="fa-solid fa-hourglass-end" Color="Color.Tertiary"
-                                                   OnClick="(()=>ShowDeactivateModal(context))"></MudIconButton>
+                                    OnClick="(()=>ShowDeactivateModal(context))"></MudIconButton>
                                 </MudTooltip>
                             </MudTd>
                         </RowTemplate>
                         <GroupFooterTemplate>
-                            <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="9">Всього до оплати: @context.Items.Count() послуг</MudTh>
+                            <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="9">
+                                @{
+                                    string resource = context.Items.Count().ToString().Last() switch
+                                    {
+                                        '1' => "TotalServicesOne",
+                                        '2' or '3' or '4' => "TotalServicesTwoFour",
+                                        _ => "TotalServicesFivePlus"
+                                    };
+                                }
+                                @Localizer[resource, context.Items.Count()]
+                            </MudTh>
                         </GroupFooterTemplate>
                     </MudTable>
                 </MudExpansionPanel>
-                <MudExpansionPanel Text="Неактивні" Expanded="false">
+                <MudExpansionPanel Text="@Localizer["Disabled"]" Expanded="false">
                     <MudTable Class="mb-4" Items="_tariffs.CurrentlyNotActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinitionNotActive"
-                              Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
+                    Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
                         <ColGroup>
                             @if (_groupDefinition.Expandable)
                             {
@@ -137,11 +144,11 @@
                             <MudTh></MudTh>
                             <MudTh></MudTh>
 
-                            <MudTh>Послуга</MudTh>
-                            <MudTh>Ціна</MudTh>
-                            <MudTh>Тип</MudTh>
-                            <MudTh>Початок дії</MudTh>
-                            <MudTh>Кінець дії</MudTh>
+                            <MudTh>@Localizer["Service"]</MudTh>
+                            <MudTh>@Localizer["Cost"]</MudTh>
+                            <MudTh>@Localizer["Type"]</MudTh>
+                            <MudTh>@Localizer["StartDate"]</MudTh>
+                            <MudTh>@Localizer["EndDate"]</MudTh>
                             <MudTh></MudTh>
                         </HeaderContent>
                         <GroupHeaderTemplate>
@@ -149,28 +156,17 @@
                         </GroupHeaderTemplate>
                         <RowTemplate>
                             <MudTd>
-                                <MudTooltip Text="Редагувати">
+                                <MudTooltip Text="@Localizer["Edit"]">
                                     <MudIconButton Size="Size.Small" Icon="fa fa-edit" OnClick="(()=>ShowEditDialog(context))"></MudIconButton>
                                 </MudTooltip>
                             </MudTd>
-                            <MudTd DataLabel="Послуга">@context.UtilityGroupName</MudTd>
-                            <MudTd DataLabel="Ціна">@context.Cost.ToString("C")</MudTd>
-                            @{
-                                var type = context.TariffType switch
-                                {
-                                    TariffType.Fixed => "Фіксований",
-                                    TariffType.HouseHoldArea => "За площу",
-                                    TariffType.Meters => "Лічильник",
-                                    TariffType.Volume => "За обсягом",
-                                    TariffType.NotFixedPayment => "Не фіксований",
-                                    _ => string.Empty
-                                };
-                            }
-                            <MudTd DataLabel="Тип">@type</MudTd>
-                            <MudTd DataLabel="Діє">@context.StartDate.ToShortDateString()</MudTd>
-                            <MudTd DataLabel="Діє">@context.EndDate?.ToShortDateString()</MudTd>
+                            <MudTd DataLabel="@Localizer["Service"]">@context.UtilityGroupName</MudTd>
+                            <MudTd DataLabel="@Localizer["Cost"]">@context.Cost.ToString("C")</MudTd>
+                            <MudTd DataLabel="Тип">@Localizer["TariffType." + context.TariffType.ToString()]</MudTd>
+                            <MudTd DataLabel="@Localizer["ActiveFrom"]">@context.StartDate.ToShortDateString()</MudTd>
+                            <MudTd DataLabel="@Localizer["EndDate"]">@context.EndDate?.ToShortDateString()</MudTd>
                             <MudTd>
-                                @*<MudTooltip Text="Видалити">
+                                @*<MudTooltip Text="@Localizer["Delete"]">
                                     <MudIconButton Size="Size.Small" Color="Color.Error"
                                                    Icon="fa fa-trash"
                                                    OnClick="(()=>ShowDeleteModal(context))"></MudIconButton>
@@ -192,11 +188,33 @@
     public string? HomeId { get; set; }
 
     private string? _errorMessage;
+    private TableGroupDefinition<TariffViewDto> _groupDefinition = new()
+        {
+            Indentation = true,
+            Expandable = true,
+            IsInitiallyExpanded = true,
+            Selector = (e) => e.Home.Name
+        };
+    private TableGroupDefinition<TariffViewDto> _groupDefinitionNotActive = new()
+        {
+            Indentation = true,
+            Expandable = false,
+            Selector = (e) => e.Home.Name,
+            InnerGroup = new TableGroupDefinition<TariffViewDto>()
+            {
+                Indentation = false,
+                Expandable = true,
+                IsInitiallyExpanded = false,
+                Selector = (e) => e.UtilityGroupName
+            }
+        };
 
     protected override async Task OnParametersSetAsync()
     {
-        await ReloadTariffs();
+        _groupDefinition.GroupName = _groupDefinitionNotActive.GroupName = Localizer["Tariffs"];
+        _groupDefinitionNotActive.InnerGroup!.GroupName = Localizer["Service"];
 
+        await ReloadTariffs();
     }
 
     private async Task ReloadTariffs()
@@ -226,7 +244,7 @@
             { x => x.HomeId, HomeId},
             { x=>x.Reference,  model}
         };
-        var dialog = await DialogService.ShowAsync<AddTariffDialog>("Створити тариф", parameters, options);
+        var dialog = await DialogService.ShowAsync<AddTariffDialog>(Localizer["AddTariff"], parameters, options);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -240,7 +258,7 @@
     {
         var parameters = new DialogParameters<AddTariffDialog> { { x => x.TariffId, tariff.Id } };
         var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Large, Position = DialogPosition.TopCenter };
-        var dialog = await DialogService.ShowAsync<AddTariffDialog>("Редагування", parameters, options);
+        var dialog = await DialogService.ShowAsync<AddTariffDialog>(Localizer["Edit"], parameters, options);
         var result = await dialog.Result;
 
         if (result is not null && !result.Canceled)
@@ -254,7 +272,7 @@
     {
         var parameters = new DialogParameters<EndTariffDialog> { { x => x.TariffId, tariff.Id } };
         var options = new DialogOptions() { BackdropClick = false, Position = DialogPosition.Center };
-        var dialog = await DialogService.ShowAsync<EndTariffDialog>("Деактивувати тариф", parameters, options);
+        var dialog = await DialogService.ShowAsync<EndTariffDialog>(Localizer["Disable"], parameters, options);
         var result = await dialog.Result;
 
         if (result is not null && !result.Canceled)
@@ -273,14 +291,14 @@
     {
         var parameters = new DialogParameters<SimpleDialog_Template>
         {
-            { x => x.ContentText, "Ви дійсно хочете видалити цей тариф? Усі пов'язані перевірки також будуть видалені. Цей процес не можна скасувати." },
-            { x => x.ButtonText, "Видалити" },
+            { x => x.ContentText, Localizer["DeleteTariffConfirmation"] },
+            { x => x.ButtonText, Localizer["Delete"] },
             { x => x.Color, Color.Error }
         };
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
 
-        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>("Видалити", parameters, options);
+        var dialog = await DialogService.ShowAsync<SimpleDialog_Template>(Localizer["Delete"], parameters, options);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -288,38 +306,14 @@
             try
             {
                 await ApiClient.Tariffs_DeleteAsync(type.Id);
-                this.Snackbar.Add($"Тариф {type.UtilityGroupName} ({type.Home.Name}) видалено", Severity.Success);
+                this.Snackbar.Add(Localizer["TariffDeletedOk", type.UtilityGroupName, type.Home.Name], Severity.Success);
                 await ReloadTariffs();
             }
             catch (ApiException ex)
             {
-                this.Snackbar.Add($"Failed to delete tariff {type.UtilityGroupName}. {ex.Message}", Severity.Error);
+                this.Snackbar.Add(Localizer["TariffDeletedError", type.UtilityGroupName, ex.Message], Severity.Error);
             }
         }
     }
 
-    private TableGroupDefinition<TariffViewDto> _groupDefinition = new()
-        {
-            GroupName = "Тарифи",
-            Indentation = true,
-            Expandable = true,
-            IsInitiallyExpanded = true,
-            Selector = (e) => e.Home.Name
-        };
-
-    private TableGroupDefinition<TariffViewDto> _groupDefinitionNotActive = new()
-        {
-            GroupName = "Тарифи",
-            Indentation = true,
-            Expandable = false,
-            Selector = (e) => e.Home.Name,
-            InnerGroup = new TableGroupDefinition<TariffViewDto>()
-            {
-                GroupName = "Послуга",
-                Indentation = false,
-                Expandable = true,
-                IsInitiallyExpanded = false,
-                Selector = (e) => e.UtilityGroupName
-            }
-        };
 }

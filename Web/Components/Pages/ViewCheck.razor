@@ -5,7 +5,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
-
+@inject ILocalizationService Localizer
 <style>
     .stick {
         background-color: var(--mud-palette-background-gray);
@@ -22,7 +22,7 @@
         <MudPaper id="check" Square="true" Elevation="0"
                   Style="padding:24px; width:fit-content; align-items: center">
 
-            <MudText Typo="Typo.h4">Рахунок за @Model.Date.ToShortDateString()</MudText>
+            <MudText Typo="Typo.h4">@Localizer["CheckFor"] @Model.Date.ToShortDateString()</MudText>
 
 
             <MudTable T="RecordViewDto" Items="Model.Records.Where(x=>x.Cost!= 0)" Hover="true" Dense="true" Class="mt-3" CustomFooter="true" Elevation="0" Style="width: fit-content;">
@@ -131,20 +131,20 @@
             <MudStack Row="true" Justify="Justify.SpaceEvenly" Class="mt-3">
                 <MudText>
                     <MudIcon Icon="fa-solid fa-square" Color="Color.Warning" Size="Size.Small" />
-                    Поточний показник лічільника
+                    @Localizer["CurrentMeasureFull"]
                 </MudText>
                 <MudText>
                     <MudIcon Icon="fa-solid fa-square" Color="Color.Success" Size="Size.Small" />
-                    Спожитий обсяг
+                    @Localizer["ConsumedVolume"]
                 </MudText>
             </MudStack>
         </MudPaper>
 
         <MudStack Row="true" Class="pa-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="fa-solid fa-trash" @onclick="async ()=>{ await ShowDeleteModal(Model);}">Видалити</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="fa-solid fa-edit" Href="@($"/home/{HouseId}/checks/{CheckId}/edit")">Редагувати</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="fa-solid fa-trash" @onclick="async ()=>{ await ShowDeleteModal(Model);}">@Localizer["Delete"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="fa-solid fa-edit" Href="@($"/home/{HouseId}/checks/{CheckId}/edit")">@Localizer["Edit"]</MudButton>
             <MudSpacer />
-            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="fa-solid fa-copy" @onclick="MakeScreenshot">Скопіювати</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="fa-solid fa-copy" @onclick="MakeScreenshot">@Localizer["Copy"]</MudButton>
         </MudStack>
     </MudPaper>
 
@@ -217,11 +217,11 @@ else
         var result = await JsRuntime.InvokeAsync<bool>("makeScreenshot");
         if (result)
         {
-            Snackbar.Add("Зображення скопійовано в буфер обміну", Severity.Success);
+            Snackbar.Add(@Localizer["CopyOk"], Severity.Success);
         }
         else
         {
-            Snackbar.Add("Зображення завантажено", Severity.Success);
+            Snackbar.Add(@Localizer["CopyDownloadOk"], Severity.Success);
         }
     }
 
@@ -229,8 +229,8 @@ else
     {
         var parameters = new DialogParameters<SimpleDialog_Template>
         {
-            { x => x.ContentText, "Ви дійсно хочете видалити цей чек? Цей процес не можна скасувати." },
-            { x => x.ButtonText, "Видалити" },
+            { x => x.ContentText, Localizer["CheckDeleteConfirmation"] },
+            { x => x.ButtonText, Localizer["Delete"] },
             { x => x.Color, Color.Error }
         };
 
@@ -244,12 +244,12 @@ else
             try
             {
                 await ApiClient.Check_DeleteAsync(check.Id);
-                this.Snackbar.Add($"Чек за {check.Date.ToShortDateString()} з будинку {check.Home.Name} видалено", Severity.Success);
+                this.Snackbar.Add(Localizer["CheckDeletedOk", check.Date.ToShortDateString(), check.Home.Name], Severity.Success);
                 NavigationManager.NavigateTo($"/home/{HouseId}");
             }
             catch (ApiException ex)
             {
-                this.Snackbar.Add($"Помилка при видаленні чеку {check.Date.ToShortDateString()} з будинку {check.Home.Name}. {ex.Message}", Severity.Error);
+                this.Snackbar.Add(@Localizer["CheckDeletedError", check.Date.ToShortDateString(), check.Home.Name, ex.Message], Severity.Error);
             }
         }
     }

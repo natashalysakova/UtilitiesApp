@@ -1,10 +1,17 @@
+using System.Resources;
+
+
 using System.Globalization;
+using System.Resources;
 using ApexCharts;
 using Microsoft.AspNetCore.Localization;
 using MudBlazor.Services;
 using Web.Clients;
 using Web.Components;
+using Web.Localization;
 using Web.NavigationServices;
+
+[assembly: NeutralResourcesLanguage("uk-UA", UltimateResourceFallbackLocation.MainAssembly)]
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +22,7 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddControllers();
 builder.Services.AddMudServices();
 builder.Services.AddApexCharts();
 
@@ -28,19 +36,14 @@ builder.Services.AddHttpClient<ApiClient>(client =>
     client.BaseAddress = new("https+http://apiservice");
 });
 
-CultureInfo.DefaultThreadCurrentCulture = new("uk-UA");
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    var supportedCultures = new[]
-    {
-            new CultureInfo("uk-UA"),
-            new CultureInfo("en"),
-    };
+builder.Services.AddLocalization();
 
-    options.DefaultRequestCulture = new RequestCulture("uk-UA", "uk-UA");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-});
+string[] supportedCultures = LocalizationService.SupportedCultures.Select(x => x.Name).ToArray();
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
 
 var app = builder.Build();
 
@@ -59,5 +62,8 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapDefaultEndpoints();
+app.MapControllers();
+
+app.UseRequestLocalization(localizationOptions);
 
 app.Run();
