@@ -1,7 +1,8 @@
 services:
   mysql:
     container_name: "mysql"
-    image: "arm64v8/mysql:9.1"
+    platform: linux/arm64/v8
+    image: "mysql:9.1"
     env_file:
       - .env
     volumes:
