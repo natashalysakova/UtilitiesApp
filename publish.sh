@@ -3,6 +3,8 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+export $(grep -v '^#' .env | xargs)
+
 tag_and_push(){
 
     src="$2$1:latest"
@@ -15,6 +17,7 @@ tag_and_push(){
     docker tag $src $tg3
     docker tag $src $tg4
 
+	docker image push $src
     docker image push $trg2
     docker image push $tg3
     docker image push $tg4
@@ -22,9 +25,7 @@ tag_and_push(){
 
 read -p 'Version: ' VERSION
 
-source .env
-
-docker compose build 
+docker compose build
 
 IMAGE='utilityapp-migrationservice'
 tag_and_push "$IMAGE" "$REGISTRY_URL" "$VERSION"

@@ -1,0 +1,9 @@
+services:
+  webfrontend:
+    environment:
+    # #Uncomment the following lines to enable HTTPS
+      HTTPS_PORTS: "8081"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: ${CERTIFICATE_PASSWORD}
+    volumes:
+      - ~/.aspnet/https:/https:ro
