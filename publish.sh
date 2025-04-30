@@ -22,8 +22,8 @@ tag_and_push(){
 
 read -p 'Version: ' VERSION
 
-REGISTRY_URL='ghcr.io/natashalysakova/'
-BUILD_PLATFORM='linux/arm64/v8'
+source .env
+
 docker compose build 
 
 IMAGE='utilityapp-migrationservice'
