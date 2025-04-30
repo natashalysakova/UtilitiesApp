@@ -5,18 +5,16 @@ set -e
 
 tag_and_push(){
 
-    src="$1:latest"
-    trg="$2$1:latest"
+    src="$2$1:latest"
+
     trg2="$2$1:$3"
     tg3="$2$1:latest-arm64v8"
     tg4="$2$1:$3-arm64v8"
 
-    docker tag $src $trg
     docker tag $src $trg2
     docker tag $src $tg3
     docker tag $src $tg4
 
-    docker image push $trg
     docker image push $trg2
     docker image push $tg3
     docker image push $tg4
