@@ -2,6 +2,7 @@
 using ApiService.Mappers;
 using ApiService.ValidationResultFactory;
 using Infrastructure;
+using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +48,8 @@ public class CheckController(UtilitiesDbContext dbContext, CheckCalculationServi
             return new NotFoundResult();
         }
 
-        return new OkObjectResult(check.ToEditDto());
+        var updated = calculationService.UpdateTariffs(check);
+        return new OkObjectResult(check.ToEditDto(updated));
     }
 
     [HttpGet("previous")]
@@ -165,7 +167,7 @@ public class CheckController(UtilitiesDbContext dbContext, CheckCalculationServi
         }
 
         await dbContext.SaveChangesAsync();
-        return new OkObjectResult(existing.ToViewDto());
+        return new OkObjectResult(await dbContext.GetChecksWithDetails(true).SingleOrDefaultAsync(h => h.Id == id));
     }
 
     [HttpPatch("{id}")]

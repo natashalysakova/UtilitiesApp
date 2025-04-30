@@ -185,4 +185,29 @@ public class CheckCalculationService(UtilitiesDbContext context)
             .LastOrDefaultAsync();
         return previousRecord is null ? 0 : previousRecord.Measure;
     }
+
+    public bool UpdateTariffs(Check check)
+    {
+        var result = false;
+        foreach (var record in check.Records)
+        {
+            if (record.Tariff.EndDate < check.Date)
+            {
+                var updatedTariff = context.Tariffs.Where(x =>
+                    x.HomeId == check.HomeId &&
+                    x.UtilityGroupId == record.Tariff.UtilityGroupId &&
+                    x.StartDate <= check.Date &&
+                    (x.EndDate >= check.Date || x.EndDate == null));
+                var tarif = updatedTariff.FirstOrDefault();
+                if (tarif != null)
+                {
+                    record.Tariff = tarif;
+                    record.TariffId = tarif.Id;
+                    result = true;
+                }
+            }
+        }
+
+        return result;
+    }
 }

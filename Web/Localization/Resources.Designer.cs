@@ -916,6 +916,15 @@ namespace Web.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Один або декілька тарифів були замінені. Сума рахунку була перерахована..
+        /// </summary>
+        internal static string TariffChanged {
+            get {
+                return ResourceManager.GetString("TariffChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Не вдалося видалити тариф {0}. Помилка: {1}.
         /// </summary>
         internal static string TariffDeletedError {

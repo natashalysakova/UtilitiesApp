@@ -8,12 +8,12 @@
 {
     <MudText Typo="Typo.h6">@Localizer["MetersMeasurements"]</MudText>
     <MudDataGrid T="RecordEditDto" Items="@_filtered"
-    Bordered="true" Dense="true"
-    EditMode="DataGridEditMode.Cell" ReadOnly="false"
-    SortMode="SortMode.None">
+                 Bordered="true" Dense="true"
+                 EditMode="DataGridEditMode.Cell" ReadOnly="false"
+                 SortMode="SortMode.None">
         <Columns>
             <PropertyColumn Property="x=>x.Tariff.UtilityGroupName" HeaderStyle="width:auto;" StickyLeft="true" Title="@Localizer["Service"]" Editable="false" />
-            <PropertyColumn CellClass="align-baseline" HeaderStyle="width:15%;" Property="x=>x.PreviousMeasure" Title="@Localizer["PreviousMeasure"]" Editable="true">
+             <PropertyColumn CellClass="align-baseline" HeaderStyle="width:15%;" Property="x=>x.PreviousMeasure" Title="@Localizer["PreviousMeasure"]" Editable="true">
                 <EditTemplate>
                     <MudField Style="padding:0;" Adornment="Adornment.End" AdornmentText="@context.Item.Tariff.Units">
                         @context.Item.PreviousMeasure.ToString("0.##")
@@ -21,14 +21,14 @@
                 </EditTemplate>
             </PropertyColumn>
             <PropertyColumn HeaderStyle="width:20%; min-width:150px;" Property="x=>x.Measure" Title="@Localizer["CurrentMeasure"]" Culture="@_culture"
-            CellClass="visible-input" HeaderClass="visible-input">
+                            CellClass="visible-input" HeaderClass="visible-input">
                 <EditTemplate>
                     <MudNumericField @bind-Value="context.Item.Measure"
-                    Culture="@_culture" Format="0.00##"
-                    HideSpinButtons="true"
-                    Adornment="Adornment.End"
-                    AdornmentText="@context.Item.Tariff.Units"
-                    TextChanged="@(async()=>{ await CommittedItemChanges(context.Item);})"></MudNumericField>
+                                     Culture="@_culture" Format="0.00##"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@context.Item.Tariff.Units"
+                                     TextChanged="@(()=>{ CommittedItemChanges(context.Item);})"></MudNumericField>
                 </EditTemplate>
             </PropertyColumn>
             <PropertyColumn HeaderStyle="width:15%;" Property="x=>x.Difference" Title="@Localizer["Difference"]">
@@ -79,9 +79,9 @@
         StateHasChanged();
     }
 
-    async Task CommittedItemChanges(RecordEditDto item)
+    void CommittedItemChanges(RecordEditDto item)
     {
-        var result = await ApiClient.Check_PostCalculateAction2Async(item, IsZeroCheck);
+        var result = ApiClient.Check_PostCalculateAction2Async(item, IsZeroCheck).Result;
         item.Cost = result.Cost;
         item.Difference = result.Difference;
         item.AdditionalSum = result.AdditionalSum;

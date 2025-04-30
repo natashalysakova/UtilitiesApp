@@ -21,7 +21,7 @@
                                      HideSpinButtons="true"
                                      Adornment="Adornment.End"
                                      AdornmentText="@context.Item.Tariff.Units"
-                                     TextChanged="@(async()=>{ await CommittedItemChanges(context.Item);})"></MudNumericField>
+                                     TextChanged="@(()=> CommittedItemChanges(context.Item))"></MudNumericField>
                 </EditTemplate>
             </PropertyColumn>
             <PropertyColumn HeaderStyle="width:15%;" Property="x=>x.Tariff.Cost" Format="C" Editable="false" Title="@Localizer["Cost"]" />
@@ -64,9 +64,9 @@
         StateHasChanged();
     }
 
-    async Task CommittedItemChanges(RecordEditDto item)
+    void CommittedItemChanges(RecordEditDto item)
     {
-        var result = await ApiClient.Check_PostCalculateAction2Async(item, IsZeroCheck);
+        var result = ApiClient.Check_PostCalculateAction2Async(item, IsZeroCheck).Result;
         item.Cost = result.Cost;
         item.AdditionalSum = result.AdditionalSum;
         Service.RequestRefresh();

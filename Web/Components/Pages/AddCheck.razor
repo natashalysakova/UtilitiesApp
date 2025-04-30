@@ -49,6 +49,14 @@
                     </MudItem>
                 </MudGrid>
                 <MudGrid>
+                    @if (Model.TariffChanged)
+                    {
+                        <MudItem xs="12">
+                        <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Info" Class="mt-2">
+                            <MudText Typo="Typo.body2">@Localizer["TariffChanged"]</MudText>
+                        </MudAlert>
+                        </MudItem>
+                    }
                     <MudItem xs="12">
                         <MetersTariffTable Model="@Model.Records" IsZeroCheck="@Model.IsZeroCheck" />
                     </MudItem>
@@ -92,10 +100,6 @@
                                     @Model.Amount.ToString("C")
                                 </MudText>
                             </MudText>
-                            @*                             @if (isCalculating)
-                            {
-                                <MudProgressCircular Color="Color.Success" Size="Size.Small" Indeterminate="true" />
-                            } *@
                         </MudStack>
                         <MudStack Row="true" Justify="Justify.FlexEnd" Class="pa-4">
                             <MudSpacer />
@@ -125,14 +129,6 @@
                     </MudStack>
                 </MudAlert>
             }
-            else
-            {
-                <MudExpansionPanels>
-                    @*                     <MudExpansionPanel Text="@Localizer["Tariffs"]" Expanded="false">
-                        <CompactTariffTable Model="Tariffs" ShowDateColumn="true" Elevation="0"></CompactTariffTable>
-                    </MudExpansionPanel> *@
-                </MudExpansionPanels>
-            }
         </MudItem>
     }
 </MudGrid>
@@ -144,9 +140,9 @@
     [Parameter]
     public string? CheckId { get; set; }
 
-    public CheckEditDto? Model { get; set; }
-    public bool IsEditMode;
-    public ICollection<TariffCalulateDto>? Tariffs { get; set; }
+    private CheckEditDto? Model { get; set; }
+    private bool IsEditMode;
+    private ICollection<TariffCalulateDto>? Tariffs { get; set; }
     private DateTime _minAvailableDate = DateTime.MinValue;
 
     protected override void OnInitialized()
@@ -156,7 +152,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!Guid.TryParse(HouseId, out var houseGuid))
+        if (!Guid.TryParse(HouseId, out var houseGuid) || Model != null)
         {
             return;
         }

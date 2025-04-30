@@ -12,9 +12,10 @@ public static partial class CheckMapper
 {
     public static partial CheckViewDto ToViewDto(this Check record);
 
-    public static partial CheckEditDto ToEditDto(this Check record);
+    public static partial CheckEditDto ToEditDto(this Check record, bool tariffChanged = false);
 
     [MapperRequiredMapping(RequiredMappingStrategy.Source)]
     [MapperIgnoreSource(nameof(CheckEditDto.HomeArea))]
+    [MapperIgnoreSource(nameof(CheckEditDto.TariffChanged))]
     public static partial Check ToEntity(this CheckEditDto dto);
 }

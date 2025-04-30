@@ -510,4 +510,7 @@
   <data name="CheckDeletedError" xml:space="preserve">
     <value>Помилка при видаленні чеку {0} з будинку {1}. {2}</value>
   </data>
+  <data name="TariffChanged" xml:space="preserve">
+    <value>Один або декілька тарифів були замінені. Сума рахунку була перерахована.</value>
+  </data>
 </root>

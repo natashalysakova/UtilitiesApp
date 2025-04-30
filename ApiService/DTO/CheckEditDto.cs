@@ -20,4 +20,6 @@ public record CheckEditDto
     public ICollection<RecordEditDto> Records { get; set; } = [];
 
     public bool IsZeroCheck { get; set; }
+
+    public bool TariffChanged { get; set; }
 }

@@ -265,7 +265,7 @@
     <value>The amount depends on the meters</value>
   </data>
   <data name="TariffType.Volume.Tooltip" xml:space="preserve">
-    <value>The the amount of service consumed, but without entering the meters values.</value>
+    <value>The the amount of service consumed, but without entering the meters values</value>
   </data>
   <data name="TariffType.Volume" xml:space="preserve">
     <value>By volume</value>
@@ -509,5 +509,8 @@
   </data>
   <data name="CheckDeletedError" xml:space="preserve">
     <value>Error when removing the bill {0} from the home {1}. {2}</value>
+  </data>
+  <data name="TariffChanged" xml:space="preserve">
+    <value>One of several tariffs were changed. Total sum was recalculated accordingly.</value>
   </data>
 </root>
