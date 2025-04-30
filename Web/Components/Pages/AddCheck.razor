@@ -206,7 +206,7 @@
         try
         {
             var result = await ApiClient.Check_PutAsync(Model!.Id, Model);
-            NavigationManager.NavigateTo($"/home/{HouseId}");
+            NavigationManager.NavigateTo($"/home/{HouseId}/checks/{result.Id}");
         }
         catch (ApiException<ValidationResult> ex)
         {
