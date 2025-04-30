@@ -8,8 +8,8 @@ tag_and_push(){
     src="$1:latest"
     trg="$2$1:latest"
     trg2="$2$1:$3"
-    tg3="$2$1:latest-$BUILD_PLATFORM"
-    tg4="$2$1:$3-$BUILD_PLATFORM"
+    tg3="$2$1:latest-arm64v8"
+    tg4="$2$1:$3-arm64v8"
 
     docker tag $src $trg
     docker tag $src $trg2
@@ -25,7 +25,7 @@ tag_and_push(){
 read -p 'Version: ' VERSION
 
 REGISTRY_URL='ghcr.io/natashalysakova/'
-BUILD_PLATFORM = 'linux/arm64/v8'
+BUILD_PLATFORM='linux/arm64/v8'
 docker compose build 
 
 IMAGE='utilityapp-migrationservice'
