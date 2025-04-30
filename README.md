@@ -17,10 +17,24 @@ To run the project using Docker Compose, follow these steps:
 1. **Ensure Docker and Docker Compose are installed** on your machine. You can download and install them from the [Docker website](https://www.docker.com/get-started).
 
 2. **Set up environment variables**:
-   - Open `.env` file in the repository and replace `MYSQL_PASSWORD` and `MYSQL_ROOT_PASSWORD` with **your own strong passwords**!
+   - Create `.env` file in the root folder of the repository using this template
+   ``` bash
+   TZ=Europe/Kyiv
+   ASPNETCORE_ENVIRONMENT=Production
+   REGISTRY_URL=
+   BUILD_PLATFORM=
+   MYSQL_ROOT_HOST='%'
+   MYSQL_HOST=mysql
+   MYSQL_USER=utilities-user
+   MYSQL_PASSWORD=[INSERT_USER_PASSWORD]
+   MYSQL_DATABASE=UtilitiesDb
+   MYSQL_ROOT_PASSWORD=[INSERT_ROOT_PASSWORD]
+   ConnectionStrings__UtilitiesDb=server=${MYSQL_HOST};user id=${MYSQL_USER};password=${MYSQL_PASSWORD};database=${MYSQL_DATABASE}
+   ```
+   - Replace `[INSERT_USER_PASSWORD]` and `[INSERT_ROOT_PASSWORD]` with **your own strong passwords**!
    - The rest of variables left untouched, unless you know what you are doing.
 
-3. **Build and run the services**:
+4. **Build and run the services**:
    - Open a terminal and navigate to the root directory of the project.
    - (optional) Set varable `REGISTRY_URL` in `.env` file to pull image from registry i.e. `ghcr.io/natashalysakova/` to use pre-build images, instead of building your own.
    - Run the following command to build and start all the services defined in the `docker-compose.yml` file:
