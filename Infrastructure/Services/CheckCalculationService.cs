@@ -109,7 +109,7 @@ public class CheckCalculationService(UtilitiesDbContext context)
 
         foreach (var tariff in tariffs)
         {
-            decimal previousMeasure = await GetPreviousMeasure(tariff.UtilityGroupId, check.HomeId);
+            decimal previousMeasure = await GetPreviousMeasure(tariff.UtilityGroupId, check.HomeId, check.Date);
 
             var record = check.Records.SingleOrDefault(x => x.TariffId == tariff.Id);
             if (record == null)
@@ -175,10 +175,10 @@ public class CheckCalculationService(UtilitiesDbContext context)
         }
     }
 
-    private async Task<decimal> GetPreviousMeasure(Guid utilityId, Guid homeId)
+    private async Task<decimal> GetPreviousMeasure(Guid utilityId, Guid homeId, DateTime date)
     {
         var previousRecord = await context.Checks
-            .Where(x => x.HomeId == homeId)
+            .Where(x => x.HomeId == homeId && x.Date < date) // ✅ filter by date
             .OrderBy(x => x.Date)
             .SelectMany(x => x.Records)
             .Where(x => x.Tariff!.UtilityGroupId == utilityId && x.Measure != 0)
