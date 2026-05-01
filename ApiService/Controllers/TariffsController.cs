@@ -16,7 +16,7 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
     [ProducesResponseType<IEnumerable<TariffViewDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid? houseId = null, TariffType? tariffType = null)
     {
-        var tariffs = GetTarrifsQuery();
+        var tariffs = GetTariffsQuery();
         if (houseId != null)
         {
             tariffs = tariffs.Where(x => x.HomeId == houseId);
@@ -37,7 +37,7 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var tariff = await GetTarrifsQuery().SingleOrDefaultAsync(h => h.Id == id);
+        var tariff = await GetTariffsQuery().SingleOrDefaultAsync(h => h.Id == id);
 
         if (tariff is null)
         {
@@ -52,7 +52,7 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetForEdit(Guid id)
     {
-        var tariff = await GetTarrifsQuery().SingleOrDefaultAsync(h => h.Id == id);
+        var tariff = await GetTariffsQuery().SingleOrDefaultAsync(h => h.Id == id);
         if (tariff is null)
         {
             return new NotFoundResult();
