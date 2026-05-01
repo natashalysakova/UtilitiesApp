@@ -226,8 +226,7 @@
     [Parameter]
     public TariffViewDto? Reference { get; set; }
 
-    [Parameter]
-    public TariffEditDto? Model { get; set; }
+    private TariffEditDto? Model { get; set; }
 
     private bool IsEditMode { get; set; }
 
@@ -242,8 +241,11 @@
 
     bool _loadingError = false;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
+        _households = await ApiClient.Home_GetAllAsync();
+        _utilityTypes = await ApiClient.Utilities_GetAllAsync();
+
         if (Reference != null)
         {
             Model = new TariffEditDto()
@@ -272,7 +274,6 @@
             {
                 Model.Limits.Add(new LimitEditDto());
             }
-
         }
         else if (TariffId == null)
         {
@@ -304,14 +305,7 @@
         {
             IsEditMode = true;
             Model = await ApiClient.Tariffs_GetForEditAsync(TariffId.Value);
-            StateHasChanged();
         }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        _households = await ApiClient.Home_GetAllAsync();
-        _utilityTypes = await ApiClient.Utilities_GetAllAsync();
     }
 
     private void Submit() => MudDialog.Close(DialogResult.Ok(true));

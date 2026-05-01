@@ -10,12 +10,12 @@
 
 <style>
     .mud-table-cell-custom-group {
-    font-weight: 500;
+        font-weight: 500;
     }
 
     .mud-table-cell-custom-group-footer {
-    padding-bottom: 50px;
-    text-align: right;
+        padding-bottom: 50px;
+        text-align: right;
     }
 </style>
 
@@ -23,7 +23,7 @@
 
 <MudGrid Spacing="4">
     <MudItem xs="12" Class="mt-4">
-        <MudButton @onclick="@(()=>ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">@Localizer["AddTariff"]</MudButton>
+        <MudButton @onclick="@(() => ShowCreateDialog())" Variant="Variant.Filled" Color="Color.Primary">@Localizer["AddTariff"]</MudButton>
     </MudItem>
     <MudItem xs="12">
         @if (_errorMessage != null)
@@ -52,15 +52,15 @@
         {
             <MudExpansionPanels>
                 <MudExpansionPanel Text="@Localizer["Active"]" Expanded="true">
-                    <MudTable Items="_tariffs.CurrentlyActive().OrderBy(x=>x.StartDate)"
-                    Class="mb-4"
-                    Hover="true"
-                    FixedHeader="true"
-                    GroupBy="_groupDefinition"
-                    Dense="true"
-                    Breakpoint="Breakpoint.Sm"
-                    HorizontalScrollbar="false"
-                    Elevation="0">
+                    <MudTable Items="_tariffs.CurrentlyActive().OrderBy(x => x.StartDate)"
+                              Class="mb-4"
+                              Hover="true"
+                              FixedHeader="true"
+                              GroupBy="_groupDefinition"
+                              Dense="true"
+                              Breakpoint="Breakpoint.Sm"
+                              HorizontalScrollbar="false"
+                              Elevation="0">
                         <ColGroup>
                             @if (_groupDefinition.Expandable)
                             {
@@ -89,7 +89,7 @@
                         <RowTemplate>
                             <MudTd>
                                 <MudTooltip Text="@Localizer["Edit"]">
-                                    <MudIconButton Size="Size.Small" Icon="fa fa-edit" OnClick="(()=>ShowEditDialog(context))"></MudIconButton>
+                                    <MudIconButton Size="Size.Small" Icon="fa fa-edit" OnClick="(() => ShowEditDialog(context))"></MudIconButton>
                                 </MudTooltip>
                             </MudTd>
                             <MudTd DataLabel="@Localizer["Service"]">@context.UtilityGroupName</MudTd>
@@ -104,7 +104,7 @@
                                 </MudTooltip> *@
                                 <MudTooltip Text="@Localizer["Disable"]">
                                     <MudIconButton Size="Size.Small" Icon="fa-solid fa-hourglass-end" Color="Color.Tertiary"
-                                    OnClick="(()=>ShowDeactivateModal(context))"></MudIconButton>
+                                                   OnClick="(() => ShowDeactivateModal(context))"></MudIconButton>
                                 </MudTooltip>
                             </MudTd>
                         </RowTemplate>
@@ -124,8 +124,8 @@
                     </MudTable>
                 </MudExpansionPanel>
                 <MudExpansionPanel Text="@Localizer["Disabled"]" Expanded="false">
-                    <MudTable Class="mb-4" Items="_tariffs.CurrentlyNotActive().OrderBy(x=>x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinitionNotActive"
-                    Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
+                    <MudTable Class="mb-4" Items="_tariffs.CurrentlyNotActive().OrderBy(x => x.StartDate)" Hover="true" FixedHeader="true" GroupBy="_groupDefinitionNotActive"
+                              Dense="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="false" Elevation="0">
                         <ColGroup>
                             @if (_groupDefinition.Expandable)
                             {
@@ -157,7 +157,7 @@
                         <RowTemplate>
                             <MudTd>
                                 <MudTooltip Text="@Localizer["Edit"]">
-                                    <MudIconButton Size="Size.Small" Icon="fa fa-edit" OnClick="(()=>ShowEditDialog(context))"></MudIconButton>
+                                    <MudIconButton Size="Size.Small" Icon="fa fa-edit" OnClick="(() => ShowEditDialog(context))"></MudIconButton>
                                 </MudTooltip>
                             </MudTd>
                             <MudTd DataLabel="@Localizer["Service"]">@context.UtilityGroupName</MudTd>
@@ -189,25 +189,25 @@
 
     private string? _errorMessage;
     private TableGroupDefinition<TariffViewDto> _groupDefinition = new()
-        {
-            Indentation = true,
-            Expandable = true,
-            IsInitiallyExpanded = true,
-            Selector = (e) => e.Home.Name
-        };
+    {
+        Indentation = true,
+        Expandable = true,
+        IsInitiallyExpanded = true,
+        Selector = (e) => e.Home.Name
+    };
     private TableGroupDefinition<TariffViewDto> _groupDefinitionNotActive = new()
+    {
+        Indentation = true,
+        Expandable = false,
+        Selector = (e) => e.Home.Name,
+        InnerGroup = new TableGroupDefinition<TariffViewDto>()
         {
-            Indentation = true,
-            Expandable = false,
-            Selector = (e) => e.Home.Name,
-            InnerGroup = new TableGroupDefinition<TariffViewDto>()
-            {
-                Indentation = false,
-                Expandable = true,
-                IsInitiallyExpanded = false,
-                Selector = (e) => e.UtilityGroupName
-            }
-        };
+            Indentation = false,
+            Expandable = true,
+            IsInitiallyExpanded = false,
+            Selector = (e) => e.UtilityGroupName
+        }
+    };
 
     protected override async Task OnParametersSetAsync()
     {
@@ -239,10 +239,17 @@
     private async Task ShowCreateDialog(TariffViewDto? model = null)
     {
         var options = new DialogOptions() { BackdropClick = false, MaxWidth = MaxWidth.Large, Position = DialogPosition.TopCenter };
+
+        TariffViewDto? reference = default;
+        if (model != null)
+        {
+            reference = await ApiClient.Tariffs_GetAsync(model.Id);
+        }
+
         var parameters = new DialogParameters<AddTariffDialog>
         {
             { x => x.HomeId, HomeId},
-            { x=>x.Reference,  model}
+            { x => x.Reference,  reference}
         };
         var dialog = await DialogService.ShowAsync<AddTariffDialog>(Localizer["AddTariff"], parameters, options);
         var result = await dialog.Result;

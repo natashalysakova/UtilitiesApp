@@ -16,7 +16,7 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
     [ProducesResponseType<IEnumerable<TariffViewDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid? houseId = null, TariffType? tariffType = null)
     {
-        var tariffs = dbContext.Tariffs.Include(x => x.Home).Include(x => x.Limits).Include(x => x.UtilityGroup).AsQueryable();
+        var tariffs = GetTarrifsQuery();
         if (houseId != null)
         {
             tariffs = tariffs.Where(x => x.HomeId == houseId);
@@ -37,7 +37,7 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var tariff = await dbContext.Tariffs.FindAsync(id);
+        var tariff = await GetTarrifsQuery().SingleOrDefaultAsync(h => h.Id == id);
 
         if (tariff is null)
         {
@@ -52,7 +52,7 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetForEdit(Guid id)
     {
-        var tariff = await dbContext.Tariffs.Include(x => x.Limits).Include(x => x.UtilityGroup).SingleOrDefaultAsync(h => h.Id == id);
+        var tariff = await GetTarrifsQuery().SingleOrDefaultAsync(h => h.Id == id);
         if (tariff is null)
         {
             return new NotFoundResult();
@@ -119,5 +119,16 @@ public class TariffsController(UtilitiesDbContext dbContext) : ControllerBase
         tariff.IsArchived = true;
         await dbContext.SaveChangesAsync();
         return new OkResult();
+    }
+
+    private IQueryable<Tariff> GetTariffsQuery()
+    {
+        var query = dbContext.Tariffs
+            .Include(x => x.Home)
+            .Include(x => x.Limits)
+            .Include(x => x.UtilityGroup)
+            .AsQueryable();
+
+        return query;
     }
 }
